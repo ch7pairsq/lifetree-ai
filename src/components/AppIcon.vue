@@ -1,0 +1,177 @@
+<script setup lang="ts">
+import { computed, type Component } from 'vue'
+import {
+  Home, HeartPulse, Bot, Brain, User, TreePine, Siren, AlertTriangle,
+  CalendarCheck, Sun, Pill, Footprints, Drama, MessageCircle, Stethoscope, Users,
+  Activity, Droplet, Droplets, Thermometer, BarChart3, FileText, AlarmClock,
+  Lightbulb, ClipboardList, Target, CheckCircle2, Film, Mic, Plane, PawPrint,
+  Sunrise, Heart, Smile, SmilePlus, Meh, Frown, Annoyed, Send, Sparkles, Check,
+  Zap, Hospital, Car, Phone, ShoppingCart, CalendarDays, Coffee, BookOpen,
+  Moon, Link2, Headphones, GraduationCap, Tv, Leaf, Scroll, MapPin,
+  Dumbbell, LifeBuoy, School, Palette, Flame, Smartphone, Clock, UtensilsCrossed,
+  Music, Camera, Laptop, Video, TrendingUp, Gem, Crown, UserPlus, ShoppingBag,
+  Package, Bell, Lock, Settings, ChevronRight, Search, Contrast, Accessibility,
+  Sprout, ShieldAlert, Wind, Plus, CircleDot, CircleUser, Wifi, Bed,
+  Volume2, Eye, LayoutGrid, List, Monitor, ChevronLeft, Star, Shield,
+  CalendarPlus, Navigation, MessageSquare, HeartHandshake, Radio,
+  CalendarHeart, X, BedDouble, PersonStanding, Candy, CloudRain,
+  ShieldCheck, Info, Watch, Cpu, Battery, RefreshCw, ChevronDown, GlassWater,
+  BookHeart, Trophy, ScrollText, Hand, Rocket,
+} from 'lucide-vue-next'
+
+// 图标名称 -> 组件映射
+const map: Record<string, Component> = {
+  home: Home,
+  'heart-pulse': HeartPulse,
+  bot: Bot,
+  brain: Brain,
+  user: User,
+  'tree-pine': TreePine,
+  siren: Siren,
+  'alert-triangle': AlertTriangle,
+  'calendar-check': CalendarCheck,
+  sun: Sun,
+  pill: Pill,
+  footprints: Footprints,
+  drama: Drama,
+  'message-circle': MessageCircle,
+  stethoscope: Stethoscope,
+  users: Users,
+  activity: Activity,
+  droplet: Droplet,
+  droplets: Droplets,
+  thermometer: Thermometer,
+  'bar-chart': BarChart3,
+  'file-text': FileText,
+  'alarm-clock': AlarmClock,
+  lightbulb: Lightbulb,
+  'clipboard-list': ClipboardList,
+  target: Target,
+  'check-circle': CheckCircle2,
+  film: Film,
+  mic: Mic,
+  plane: Plane,
+  'paw-print': PawPrint,
+  sunrise: Sunrise,
+  heart: Heart,
+  smile: Smile,
+  'smile-plus': SmilePlus,
+  meh: Meh,
+  frown: Frown,
+  annoyed: Annoyed,
+  send: Send,
+  sparkles: Sparkles,
+  check: Check,
+  zap: Zap,
+  hospital: Hospital,
+  car: Car,
+  phone: Phone,
+  'shopping-cart': ShoppingCart,
+  'calendar-days': CalendarDays,
+  'calendar-heart': CalendarHeart,
+  coffee: Coffee,
+  'book-open': BookOpen,
+  moon: Moon,
+  link: Link2,
+  headphones: Headphones,
+  graduation: GraduationCap,
+  tv: Tv,
+  leaf: Leaf,
+  scroll: Scroll,
+  'map-pin': MapPin,
+  dumbbell: Dumbbell,
+  'life-buoy': LifeBuoy,
+  school: School,
+  palette: Palette,
+  flame: Flame,
+  smartphone: Smartphone,
+  clock: Clock,
+  utensils: UtensilsCrossed,
+  music: Music,
+  camera: Camera,
+  laptop: Laptop,
+  video: Video,
+  'trending-up': TrendingUp,
+  gem: Gem,
+  crown: Crown,
+  'user-plus': UserPlus,
+  'shopping-bag': ShoppingBag,
+  package: Package,
+  bell: Bell,
+  lock: Lock,
+  settings: Settings,
+  'chevron-right': ChevronRight,
+  'chevron-down': ChevronDown,
+  search: Search,
+  contrast: Contrast,
+  accessibility: Accessibility,
+  sprout: Sprout,
+  'shield-alert': ShieldAlert,
+  wind: Wind,
+  plus: Plus,
+  'circle-dot': CircleDot,
+  'circle-user': CircleUser,
+  wifi: Wifi,
+  bed: Bed,
+  'bed-double': BedDouble,
+  'person-standing': PersonStanding,
+  candy: Candy,
+  'cloud-rain': CloudRain,
+  'shield-check': ShieldCheck,
+  info: Info,
+  watch: Watch,
+  cpu: Cpu,
+  battery: Battery,
+  'refresh-cw': RefreshCw,
+  'volume-2': Volume2,
+  'glass-water': GlassWater,
+  eye: Eye,
+  'layout-grid': LayoutGrid,
+  list: List,
+  monitor: Monitor,
+  'chevron-left': ChevronLeft,
+  star: Star,
+  shield: Shield,
+  'calendar-plus': CalendarPlus,
+  navigation: Navigation,
+  'message-square': MessageSquare,
+  'heart-handshake': HeartHandshake,
+  radio: Radio,
+  x: X,
+  'book-heart': BookHeart,
+  trophy: Trophy,
+  'scroll-text': ScrollText,
+  hand: Hand,
+  rocket: Rocket,
+}
+
+const props = withDefaults(defineProps<{
+  name: string
+  size?: number | string
+  color?: string
+  strokeWidth?: number
+}>(), {
+  size: 24,
+  strokeWidth: 2,
+})
+
+const iconComp = computed<Component>(() => map[props.name] || CircleDot)
+</script>
+
+<template>
+  <component
+    :is="iconComp"
+    :size="size"
+    :color="color"
+    :stroke-width="strokeWidth"
+    class="app-icon"
+  />
+</template>
+
+<style scoped>
+.app-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+</style>
