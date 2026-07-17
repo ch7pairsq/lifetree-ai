@@ -85,6 +85,8 @@ onUnmounted(() => {
           <span class="sos-hint">{{ pressing ? '求助中...' : '长按3秒' }}</span>
         </span>
       </button>
+
+
     </div>
   </header>
 
@@ -276,6 +278,19 @@ onUnmounted(() => {
   margin-top: 2px;
   white-space: nowrap;
   font-family: var(--font-display);
+}
+
+/* 视障语音模式：小型 SOS 提示按钮 */
+.voice-sos-btn {
+  width: 40px;
+  height: 40px;
+  min-height: auto !important;
+  border-radius: 50%;
+  background: rgba(212, 107, 107, 0.9);
+  box-shadow: 0 2px 8px rgba(212, 107, 107, 0.3);
+}
+.voice-sos-btn:active {
+  transform: scale(0.95);
 }
 
 /* SOS 已发出弹窗 */

@@ -352,6 +352,49 @@ a:active, button:active, [role="button"]:active, [data-tappable]:active {
   min-height: var(--mode-touch-target) !important;
 }
 
+/* 视障语音模式：保持圆形小图标按钮原始尺寸（避免被拉长） */
+[data-mode="voice"] .voice-btn,
+[data-mode="voice"] .send-btn,
+[data-mode="voice"] .float-btn,
+[data-mode="voice"] .float-close,
+[data-mode="voice"] .flow-close,
+[data-mode="voice"] .quick-panel-toggle,
+[data-mode="voice"] .info-dialog-close,
+[data-mode="voice"] .share-dialog-close,
+[data-mode="voice"] .life-svc-close {
+  min-height: auto !important;
+  aspect-ratio: 1 !important;
+  height: auto !important;
+}
+[data-mode="voice"] .voice-btn,
+[data-mode="voice"] .send-btn {
+  width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  min-width: 48px !important;
+}
+[data-mode="voice"] .float-btn {
+  width: 56px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  min-width: 56px !important;
+}
+/* 视障语音：快捷面板折叠按钮、关闭按钮使用合理尺寸 */
+[data-mode="voice"] .quick-panel-toggle {
+  min-height: 44px !important;
+  aspect-ratio: auto !important;
+}
+[data-mode="voice"] .float-close,
+[data-mode="voice"] .flow-close,
+[data-mode="voice"] .info-dialog-close,
+[data-mode="voice"] .share-dialog-close,
+[data-mode="voice"] .life-svc-close {
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  aspect-ratio: 1 !important;
+}
+
 /* 高对比模式：增强可读性 */
 [data-mode="elderly"] .section-title,
 [data-mode="voice"] .section-title {

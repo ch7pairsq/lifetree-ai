@@ -8,6 +8,10 @@ import {
   learningProgress,
   activities,
   communityCircles,
+  healthKnowledge,
+  elderlyCourses,
+  photoRepair,
+  companionSuggestions,
 } from '@/mock'
 
 const route = useRoute()
@@ -23,18 +27,12 @@ const gradMap: Record<string, string> = {
   red: 'linear-gradient(135deg, #FFD3D3, #D46B6B)',
 }
 
-// 老年课堂图标颜色映射
-function iconToColor(icon: string): string {
-  if (icon === 'smartphone') return 'blue'
-  if (icon === 'palette') return 'gold'
-  if (icon === 'shield-alert') return 'red'
-  if (icon === 'leaf') return 'green'
-  return 'teal'
-}
-
 // 直播与回放展示控制
 const showAllLive = ref(false)
 const displayLive = computed(() => (showAllLive.value ? liveClasses : liveClasses.slice(0, 2)))
+
+// 老年课堂：新增课程默认隐藏，点击更多时显示
+const showMoreCourses = ref(false)
 
 // 学习开始提示
 const startToast = ref('')
@@ -86,6 +84,51 @@ function showToast(msg: string) {
 
 // 老年课堂扩展：防诈骗教程
 const elderlyClassesExtended = [...elderlyClasses]
+
+// ===== 任务7：老年课堂扩展课程（8类）=====
+const showCourseDialog = ref(false)
+const activeCourse = ref<typeof elderlyCourses[number] | null>(null)
+function openCourseDetail(course: typeof elderlyCourses[number]) {
+  activeCourse.value = course
+  showCourseDialog.value = true
+}
+
+// 默认课程打开详情弹窗
+function openElderlyCourseDetail(ec: typeof elderlyClasses[number]) {
+  activeCourse.value = {
+    id: 0,
+    icon: ec.icon,
+    name: ec.name,
+    desc: ec.desc,
+    lessons: ec.lessons,
+    level: ec.level,
+    color: ec.color,
+    items: ec.items,
+  }
+  showCourseDialog.value = true
+}
+
+// ===== 任务8：老照片智能修复 =====
+const showPhotoRepair = ref(false)
+const activeBookType = ref<string>('')
+function openPhotoRepair() {
+  showPhotoRepair.value = true
+}
+function selectBookType(id: string) {
+  activeBookType.value = id
+  showToast(`已选择：${photoRepair.bookTypes.find(b => b.id === id)?.name}`)
+}
+function startRepair() {
+  showToast('小康正在为您修复老照片...\n\n您可在"我的-老照片相册"查看修复进度。')
+}
+
+// ===== 任务4：夕阳事迹 / 健康知识科普 切换 =====
+const sunsetTab = ref<'stories' | 'knowledge'>('stories')
+
+// ===== 任务6：智能陪伴推荐 =====
+function handleSuggestion(s: typeof companionSuggestions[number]) {
+  showToast(`小康已为您安排：${s.title}\n\n${s.desc}`)
+}
 
 // 老年故事
 const elderlyStories = [
@@ -167,20 +210,144 @@ onMounted(() => {
 
     <!-- 2. 老年课堂（合并学习分类） -->
     <section ref="classroomSection" class="block">
-      <div class="section-title"><AppIcon name="school" :size="18" /> 老年课堂 <span class="more-link">更多 ></span></div>
-      <div class="elderly-grid">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="school" :size="18" /> 老年课堂</div>
+        <span class="more-link" @click="showMoreCourses = !showMoreCourses">
+          {{ showMoreCourses ? '收起' : '更多' }}
+        </span>
+      </div>
+
+      <!-- 精品课程（8 大类，默认隐藏，点击更多时显示） -->
+      <transition name="expand">
+        <div v-if="showMoreCourses" class="course-grid">
+          <div
+            v-for="course in elderlyCourses"
+            :key="course.id"
+            class="course-card"
+            :class="course.color"
+            @click="openCourseDetail(course)"
+          >
+            <div class="course-icon-wrap" :style="{ background: gradMap[course.color] }">
+              <AppIcon :name="course.icon" :size="22" :color="'#fff'" />
+            </div>
+            <div class="course-info">
+              <div class="course-name-row">
+                <span class="course-name">{{ course.name }}</span>
+                <span class="course-level" :class="course.color">{{ course.level }}</span>
+              </div>
+              <div class="course-desc">{{ course.desc }}</div>
+              <div class="course-meta">
+                <span><AppIcon name="book-open" :size="10" /> {{ course.lessons }} 课</span>
+                <span class="course-arrow"><AppIcon name="chevron-right" :size="11" /></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- 默认课程（图形图标，可点击查看详情） -->
+      <div class="course-grid">
         <div
           v-for="ec in elderlyClassesExtended"
           :key="ec.name"
-          class="elderly-card"
-          @click="startCourse(ec.name)"
+          class="course-card"
+          :class="ec.color"
+          @click="openElderlyCourseDetail(ec)"
         >
-          <div class="elderly-header">
-            <span class="elderly-dot" :style="{ background: gradMap[iconToColor(ec.icon)] }"></span>
-            <span class="elderly-name">{{ ec.name }}</span>
+          <div class="course-icon-wrap" :style="{ background: gradMap[ec.color] }">
+            <AppIcon :name="ec.icon" :size="22" :color="'#fff'" />
           </div>
-          <div class="elderly-desc">{{ ec.desc }}</div>
+          <div class="course-info">
+            <div class="course-name-row">
+              <span class="course-name">{{ ec.name }}</span>
+              <span class="course-level" :class="ec.color">{{ ec.level }}</span>
+            </div>
+            <div class="course-desc">{{ ec.desc }}</div>
+            <div class="course-meta">
+              <span><AppIcon name="book-open" :size="10" /> {{ ec.lessons }} 课</span>
+              <span class="course-arrow"><AppIcon name="chevron-right" :size="11" /></span>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 智能陪伴广场（任务6：AI 智能推荐） -->
+    <section class="block">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="sparkles" :size="18" /> 智能陪伴广场</div>
+        <span class="companion-ai-tag"><AppIcon name="bot" :size="10" /> AI 智能推荐</span>
+      </div>
+      <p class="block-sub">小康会根据您的兴趣、身体状况、天气、时间智能推荐，让陪伴自然发生</p>
+      <div class="companion-suggest-list">
+        <div
+          v-for="s in companionSuggestions"
+          :key="s.id"
+          class="companion-suggest-card"
+          @click="handleSuggestion(s)"
+        >
+          <div class="companion-suggest-icon" :style="{ background: s.bg }">
+            <AppIcon :name="s.icon" :size="22" :color="'#fff'" />
+          </div>
+          <div class="companion-suggest-body">
+            <div class="companion-suggest-title">{{ s.title }}</div>
+            <div class="companion-suggest-desc">{{ s.desc }}</div>
+            <div class="companion-suggest-reason">
+              <AppIcon name="info" :size="10" :color="'var(--color-text-tertiary)'" />
+              <span>{{ s.reason }}</span>
+            </div>
+            <div class="companion-suggest-foot">
+              <span class="companion-suggest-time"><AppIcon name="clock" :size="10" /> {{ s.time }}</span>
+              <button class="companion-suggest-btn">{{ s.action }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 老照片智能修复（任务8） -->
+    <section class="block">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="book-heart" :size="18" /> 老照片智能修复</div>
+        <span class="more-link" @click="openPhotoRepair">立即制作 ></span>
+      </div>
+      <p class="block-sub">AI 修复老旧照片，生成精美电子书/实体书，留住珍贵回忆</p>
+      <div class="photo-repair-card" @click="openPhotoRepair">
+        <div class="photo-repair-features">
+          <div v-for="f in photoRepair.features" :key="f.title" class="photo-repair-feature">
+            <div class="photo-repair-feature-icon" :style="{ background: f.color }">
+              <AppIcon :name="f.icon" :size="18" :color="'var(--color-brand-dark)'" />
+            </div>
+            <div class="photo-repair-feature-title">{{ f.title }}</div>
+            <div class="photo-repair-feature-desc">{{ f.desc }}</div>
+          </div>
+        </div>
+        <div class="photo-repair-examples">
+          <div class="photo-repair-examples-title">
+            <AppIcon name="camera" :size="12" /> 已修复示例
+          </div>
+          <div class="photo-repair-examples-list">
+            <div
+              v-for="ex in photoRepair.examples"
+              :key="ex.id"
+              class="photo-repair-example-item"
+              :class="ex.status"
+            >
+              <div class="photo-repair-example-thumb">
+                <AppIcon name="image" :size="20" :color="'var(--color-text-tertiary)'" />
+              </div>
+              <div class="photo-repair-example-info">
+                <div class="photo-repair-example-title">{{ ex.title }}</div>
+                <div class="photo-repair-example-desc">{{ ex.desc }}</div>
+              </div>
+              <span v-if="ex.status === 'done'" class="photo-repair-example-status done">已完成</span>
+              <span v-else class="photo-repair-example-status pending">待修复</span>
+            </div>
+          </div>
+        </div>
+        <button class="photo-repair-cta" @click.stop="openPhotoRepair">
+          <AppIcon name="sparkles" :size="14" :color="'#fff'" /> 立即修复老照片 · 制作电子书/实体书
+        </button>
       </div>
     </section>
 
@@ -271,13 +438,32 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- 夕阳事迹 -->
+    <!-- 夕阳事迹 / 健康知识科普（任务4：点击切换 + 精准推送） -->
     <section class="block">
       <div class="section-title-row">
-        <div class="section-title"><AppIcon name="book-heart" :size="18" /> 夕阳事迹</div>
-        <span class="more-link" @click="showToast('查看更多夕阳事迹')">更多</span>
+        <div class="sunset-tabs">
+          <button
+            class="sunset-tab"
+            :class="{ active: sunsetTab === 'stories' }"
+            @click="sunsetTab = 'stories'"
+          >
+            <AppIcon name="book-heart" :size="14" /> 夕阳事迹
+          </button>
+          <button
+            class="sunset-tab"
+            :class="{ active: sunsetTab === 'knowledge' }"
+            @click="sunsetTab = 'knowledge'"
+          >
+            <AppIcon name="lightbulb" :size="14" /> 健康知识科普
+          </button>
+        </div>
+        <span class="more-link" @click="showToast(sunsetTab === 'stories' ? '查看更多夕阳事迹' : '查看更多健康知识')">
+          更多
+        </span>
       </div>
-      <div class="story-list">
+
+      <!-- 夕阳事迹列表 -->
+      <div v-if="sunsetTab === 'stories'" class="story-list">
         <div v-for="(story, idx) in elderlyStories" :key="idx" class="story-card" @click="showToast(story.title)">
           <div class="story-image" :style="{ background: story.bg }">
             <AppIcon :name="story.icon" :size="32" :color="'#fff'" />
@@ -286,6 +472,39 @@ onMounted(() => {
             <div class="story-tag">{{ story.tag }}</div>
             <div class="story-title">{{ story.title }}</div>
             <div class="story-desc">{{ story.desc }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 健康知识科普（精准推送） -->
+      <div v-else class="knowledge-list">
+        <div class="knowledge-push-banner">
+          <AppIcon name="sparkles" :size="14" :color="'var(--color-brand-dark)'" />
+          <span>小康根据您的健康状况，为您精准推送以下知识</span>
+        </div>
+        <div
+          v-for="k in healthKnowledge"
+          :key="k.id"
+          class="knowledge-card"
+          @click="showToast(`正在阅读：${k.title}\n\n${k.summary}`)"
+        >
+          <div class="knowledge-icon" :style="{ background: k.bg }">
+            <AppIcon :name="k.icon" :size="22" :color="'#fff'" />
+          </div>
+          <div class="knowledge-body">
+            <div class="knowledge-title-row">
+              <span class="knowledge-category">{{ k.category }}</span>
+              <span class="knowledge-read-time"><AppIcon name="clock" :size="10" /> {{ k.readTime }}</span>
+            </div>
+            <div class="knowledge-title">{{ k.title }}</div>
+            <div class="knowledge-summary">{{ k.summary }}</div>
+            <div class="knowledge-reason">
+              <AppIcon name="heart" :size="10" :color="'#E74C3C'" />
+              <span>{{ k.reason }}</span>
+            </div>
+            <div class="knowledge-tags">
+              <span v-for="tag in k.tags" :key="tag" class="knowledge-tag">{{ tag }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -335,6 +554,128 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <!-- 课程详情弹窗（任务7） -->
+    <transition name="fade">
+      <div v-if="showCourseDialog && activeCourse" class="course-dialog-mask" @click="showCourseDialog = false">
+        <div class="course-dialog" @click.stop>
+          <div class="course-dialog-head" :style="{ background: gradMap[activeCourse.color] }">
+            <div class="course-dialog-icon">
+              <AppIcon :name="activeCourse.icon" :size="28" :color="'#fff'" />
+            </div>
+            <div class="course-dialog-title-wrap">
+              <div class="course-dialog-name">{{ activeCourse.name }}</div>
+              <div class="course-dialog-meta">
+                <span class="course-dialog-level">{{ activeCourse.level }}</span>
+                <span class="course-dialog-lessons">{{ activeCourse.lessons }} 课时</span>
+              </div>
+            </div>
+            <button class="course-dialog-close" @click="showCourseDialog = false">
+              <AppIcon name="x" :size="18" :color="'#fff'" />
+            </button>
+          </div>
+          <div class="course-dialog-body">
+            <div class="course-dialog-desc">{{ activeCourse.desc }}</div>
+            <div class="course-dialog-subtitle">
+              <AppIcon name="list" :size="14" :color="'var(--color-brand)'" />
+              <span>课程章节</span>
+            </div>
+            <div class="course-dialog-items">
+              <div
+                v-for="(item, idx) in activeCourse.items"
+                :key="idx"
+                class="course-dialog-item"
+                @click="startCourse(`${activeCourse.name} · ${item}`)"
+              >
+                <span class="course-dialog-item-num">{{ idx + 1 }}</span>
+                <span class="course-dialog-item-name">{{ item }}</span>
+                <AppIcon name="play" :size="12" :color="'var(--color-brand)'" />
+              </div>
+            </div>
+          </div>
+          <div class="course-dialog-foot">
+            <button class="course-dialog-btn primary" @click="startCourse(activeCourse.name); showCourseDialog = false">
+              <AppIcon name="play" :size="14" :color="'#fff'" /> 开始学习
+            </button>
+            <button class="course-dialog-btn ghost" @click="showToast(`已收藏：${activeCourse.name}`)">
+              <AppIcon name="star" :size="14" /> 收藏
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 老照片智能修复弹窗（任务8） -->
+    <transition name="fade">
+      <div v-if="showPhotoRepair" class="photo-repair-mask" @click="showPhotoRepair = false">
+        <div class="photo-repair-dialog" @click.stop>
+          <div class="photo-repair-dialog-head">
+            <div class="photo-repair-dialog-title">
+              <AppIcon name="book-heart" :size="18" :color="'var(--color-brand)'" />
+              <span>老照片智能修复</span>
+            </div>
+            <button class="photo-repair-dialog-close" @click="showPhotoRepair = false">
+              <AppIcon name="x" :size="18" :color="'var(--color-text-tertiary)'" />
+            </button>
+          </div>
+          <div class="photo-repair-dialog-body">
+            <!-- 功能列表 -->
+            <div class="repair-features-grid">
+              <div v-for="f in photoRepair.features" :key="f.title" class="repair-feature-item">
+                <div class="repair-feature-icon" :style="{ background: f.color }">
+                  <AppIcon :name="f.icon" :size="20" :color="'var(--color-brand-dark)'" />
+                </div>
+                <div class="repair-feature-title">{{ f.title }}</div>
+                <div class="repair-feature-desc">{{ f.desc }}</div>
+              </div>
+            </div>
+
+            <!-- 上传区 -->
+            <div class="repair-upload-area" @click="showToast('请选择需要修复的老照片（支持拍照或从相册选择）')">
+              <AppIcon name="camera" :size="32" :color="'var(--color-text-tertiary)'" />
+              <div class="repair-upload-title">上传老照片</div>
+              <div class="repair-upload-desc">支持 JPG/PNG，AI 自动修复划痕、褪色、模糊</div>
+            </div>
+
+            <!-- 成书方式 -->
+            <div class="repair-book-section">
+              <div class="repair-book-title">
+                <AppIcon name="book" :size="14" :color="'var(--color-brand)'" />
+                <span>选择成书方式</span>
+              </div>
+              <div class="repair-book-list">
+                <div
+                  v-for="b in photoRepair.bookTypes"
+                  :key="b.id"
+                  class="repair-book-item"
+                  :class="{ active: activeBookType === b.id, popular: b.popular }"
+                  @click="selectBookType(b.id)"
+                >
+                  <span v-if="b.popular" class="repair-book-popular">热门</span>
+                  <div class="repair-book-icon">
+                    <AppIcon :name="b.icon" :size="20" :color="'var(--color-brand)'" />
+                  </div>
+                  <div class="repair-book-info">
+                    <div class="repair-book-name">{{ b.name }}</div>
+                    <div class="repair-book-desc">{{ b.desc }}</div>
+                    <div class="repair-book-price">
+                      <span v-if="b.price === 0" class="free">免费</span>
+                      <span v-else class="price">¥{{ b.price }}</span>
+                    </div>
+                  </div>
+                  <span class="repair-book-radio" :class="{ active: activeBookType === b.id }"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="photo-repair-dialog-foot">
+            <button class="repair-dialog-btn primary" @click="startRepair">
+              <AppIcon name="sparkles" :size="14" :color="'#fff'" /> 开始修复 · 生成相册
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
 
     <!-- 开始学习提示 -->
     <transition name="toast">
@@ -1144,5 +1485,920 @@ onMounted(() => {
 }
 .cyber-join-btn:active {
   transform: scale(0.95);
+}
+
+/* ===== 任务7：老年课堂精品课程 ===== */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.course-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: rgba(91, 184, 158, 0.3);
+}
+.course-icon-wrap {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.course-info {
+  flex: 1;
+  min-width: 0;
+}
+.course-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.course-name {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.course-level {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.course-level.gold { color: #B8741A; background: rgba(246, 163, 92, 0.15); }
+.course-level.green { color: var(--color-brand-dark); background: rgba(91, 184, 158, 0.15); }
+.course-level.teal { color: var(--color-brand-dark); background: rgba(91, 184, 158, 0.15); }
+.course-level.red { color: #C0392B; background: rgba(231, 76, 60, 0.12); }
+.course-level.blue { color: #2E5A88; background: rgba(111, 177, 217, 0.15); }
+.course-desc {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.course-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+}
+.course-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ===== 课程详情弹窗 ===== */
+.course-dialog-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.course-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 85vh;
+  background: var(--color-surface-solid);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: courseFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes courseFadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.course-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: 20px 20px 0 0;
+  position: relative;
+}
+.course-dialog-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.course-dialog-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.course-dialog-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.course-dialog-meta {
+  display: flex;
+  gap: var(--space-2);
+}
+.course-dialog-level,
+.course-dialog-lessons {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+.course-dialog-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.course-dialog-close:hover { background: rgba(255, 255, 255, 0.35); }
+.course-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+.course-dialog-body::-webkit-scrollbar {
+  width: 4px;
+}
+.course-dialog-body::-webkit-scrollbar-thumb {
+  background: rgba(91, 184, 158, 0.35);
+  border-radius: 2px;
+}
+.course-dialog-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+}
+.course-dialog-subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+.course-dialog-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.course-dialog-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.course-dialog-item:hover {
+  background: rgba(91, 184, 158, 0.06);
+  border-color: rgba(91, 184, 158, 0.3);
+  transform: translateX(2px);
+}
+.course-dialog-item-num {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(91, 184, 158, 0.12);
+  color: var(--color-brand-dark);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.course-dialog-item-name {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.course-dialog-foot {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+.course-dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.course-dialog-btn.primary {
+  flex: 1;
+  background: var(--color-brand);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.3);
+}
+.course-dialog-btn.primary:hover {
+  background: var(--color-brand-dark);
+  transform: translateY(-1px);
+}
+.course-dialog-btn.ghost {
+  background: rgba(91, 184, 158, 0.1);
+  color: var(--color-brand-dark);
+}
+.course-dialog-btn.ghost:hover {
+  background: rgba(91, 184, 158, 0.18);
+}
+
+/* ===== 任务6：智能陪伴广场 ===== */
+.companion-ai-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.15), rgba(91, 184, 158, 0.05));
+  border: 1px solid rgba(91, 184, 158, 0.25);
+  border-radius: 10px;
+  color: var(--color-brand-dark);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+.companion-suggest-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.companion-suggest-card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.companion-suggest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: rgba(91, 184, 158, 0.3);
+}
+.companion-suggest-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.companion-suggest-body {
+  flex: 1;
+  min-width: 0;
+}
+.companion-suggest-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+.companion-suggest-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.companion-suggest-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 4px 8px;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.companion-suggest-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.companion-suggest-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+.companion-suggest-btn {
+  padding: 5px 14px;
+  background: var(--color-brand);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(91, 184, 158, 0.3);
+}
+.companion-suggest-btn:hover {
+  background: var(--color-brand-dark);
+  transform: translateY(-1px);
+}
+
+/* ===== 任务8：老照片智能修复 ===== */
+.photo-repair-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: var(--space-3);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.photo-repair-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.photo-repair-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.photo-repair-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  text-align: center;
+}
+.photo-repair-feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-repair-feature-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.photo-repair-feature-desc {
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+.photo-repair-examples {
+  padding: var(--space-2) var(--space-3);
+  background: rgba(91, 184, 158, 0.04);
+  border-radius: 10px;
+  margin-bottom: var(--space-3);
+}
+.photo-repair-examples-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+.photo-repair-examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.photo-repair-example-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 8px;
+  background: var(--color-surface-solid);
+  border-radius: 8px;
+}
+.photo-repair-example-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.photo-repair-example-info {
+  flex: 1;
+  min-width: 0;
+}
+.photo-repair-example-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.photo-repair-example-desc {
+  font-size: 0.65rem;
+  color: var(--color-text-tertiary);
+}
+.photo-repair-example-status {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.photo-repair-example-status.done {
+  color: var(--color-brand-dark);
+  background: rgba(91, 184, 158, 0.15);
+}
+.photo-repair-example-status.pending {
+  color: #B8741A;
+  background: rgba(246, 163, 92, 0.15);
+}
+.photo-repair-cta {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.3);
+}
+.photo-repair-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(91, 184, 158, 0.4);
+}
+
+/* ===== 老照片修复弹窗 ===== */
+.photo-repair-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.photo-repair-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 85vh;
+  background: var(--color-surface-solid);
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  animation: courseSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.photo-repair-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.photo-repair-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.photo-repair-dialog-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.photo-repair-dialog-close:hover { background: rgba(0, 0, 0, 0.06); }
+.photo-repair-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+}
+.photo-repair-dialog-body::-webkit-scrollbar {
+  width: 4px;
+}
+.photo-repair-dialog-body::-webkit-scrollbar-thumb {
+  background: rgba(91, 184, 158, 0.35);
+  border-radius: 2px;
+}
+.repair-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.repair-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  text-align: center;
+}
+.repair-feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.repair-feature-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.repair-feature-desc {
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+.repair-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-4);
+  border: 2px dashed rgba(91, 184, 158, 0.3);
+  border-radius: 12px;
+  background: rgba(91, 184, 158, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: var(--space-3);
+}
+.repair-upload-area:hover {
+  border-color: var(--color-brand);
+  background: rgba(91, 184, 158, 0.08);
+}
+.repair-upload-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.repair-upload-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+.repair-book-section {
+  margin-bottom: var(--space-2);
+}
+.repair-book-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+.repair-book-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.repair-book-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.repair-book-item:hover {
+  border-color: rgba(91, 184, 158, 0.3);
+}
+.repair-book-item.active {
+  border-color: var(--color-brand);
+  background: rgba(91, 184, 158, 0.06);
+}
+.repair-book-popular {
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  padding: 1px 7px;
+  background: linear-gradient(135deg, #FFB199, #FF8E8E);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.repair-book-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(91, 184, 158, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.repair-book-info {
+  flex: 1;
+  min-width: 0;
+}
+.repair-book-name {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+.repair-book-desc {
+  font-size: 0.65rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+.repair-book-price .free {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-brand);
+}
+.repair-book-price .price {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #C0392B;
+}
+.repair-book-radio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+.repair-book-radio.active {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.photo-repair-dialog-foot {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+.repair-dialog-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.repair-dialog-btn.primary {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.3);
+}
+.repair-dialog-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(91, 184, 158, 0.4);
+}
+
+/* ===== 任务4：夕阳事迹 / 健康知识科普 切换 ===== */
+.sunset-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(91, 184, 158, 0.08);
+  border-radius: 12px;
+}
+.sunset-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sunset-tab:hover {
+  color: var(--color-brand-dark);
+}
+.sunset-tab.active {
+  background: var(--color-brand);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(91, 184, 158, 0.3);
+}
+
+/* 健康知识科普 */
+.knowledge-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.knowledge-push-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.12), rgba(91, 184, 158, 0.04));
+  border: 1px solid rgba(91, 184, 158, 0.2);
+  border-radius: 10px;
+  font-size: 0.72rem;
+  color: var(--color-brand-dark);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+.knowledge-card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.knowledge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: rgba(91, 184, 158, 0.3);
+}
+.knowledge-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.knowledge-body {
+  flex: 1;
+  min-width: 0;
+}
+.knowledge-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.knowledge-category {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  background: rgba(91, 184, 158, 0.12);
+  padding: 1px 8px;
+  border-radius: 8px;
+}
+.knowledge-read-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+}
+.knowledge-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 3px;
+}
+.knowledge-summary {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.knowledge-reason {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(231, 76, 60, 0.06);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  color: #C0392B;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.knowledge-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.knowledge-tag {
+  font-size: 0.6rem;
+  color: var(--color-text-tertiary);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 6px;
+  border-radius: 6px;
 }
 </style>

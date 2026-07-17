@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { RefreshCw } from 'lucide-vue-next'
-import { vitals, medications, healthReport, healthTip, healthTips, riskGuardScores, greeting } from '@/mock'
+import { vitals, medications, healthReport, healthTip, healthTips, riskGuardScores, greeting, onlineDoctors, medicalOrders, medicalOrderSummary, healthReports, alertCenter, type ReportPeriod } from '@/mock'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import AppIcon from '@/components/AppIcon.vue'
@@ -62,6 +62,39 @@ function analyzeRisk() {
       analyzing.value = false
     }
   }, 30)
+}
+
+// ===== 健康报告中心（历史/周月年报/趋势/异常预警）=====
+const showReportCenter = ref(false)
+const activePeriod = ref<ReportPeriod>('day')
+const periodTabs: { key: ReportPeriod; label: string; icon: string }[] = [
+  { key: 'day', label: '日报', icon: 'file-text' },
+  { key: 'week', label: '周报', icon: 'calendar-days' },
+  { key: 'month', label: '月报', icon: 'calendar-check' },
+  { key: 'year', label: '年报', icon: 'trophy' },
+]
+const currentReport = computed(() => {
+  return healthReports.find(r => r.period === activePeriod.value) || healthReports[0]
+})
+// 趋势图：根据数据生成 SVG 折线
+function buildTrendPath(data: number[], width = 240, height = 50, pad = 4): string {
+  if (data.length < 2) return ''
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+  const step = (width - pad * 2) / (data.length - 1)
+  return data.map((v, i) => {
+    const x = pad + i * step
+    const y = height - pad - ((v - min) / range) * (height - pad * 2)
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+}
+function switchPeriod(p: ReportPeriod) {
+  activePeriod.value = p
+}
+function viewReportHistory() {
+  showReportCenter.value = true
+  activePeriod.value = 'day'
 }
 
 // 统一提示弹窗（替代原生 alert）
@@ -238,6 +271,86 @@ const displayRiskLevel = computed(() => {
 // 健康评分环：周长 2*PI*65 ≈ 408.4
 const circumference = 2 * Math.PI * 65
 const ringOffset = computed(() => circumference * (1 - displayScore.value / 100))
+
+// ===== AI 记医嘱（任务5）=====
+const showMedicalOrders = ref(false)
+const showMedicalSummary = ref(false)
+const playingSummary = ref(false)
+let summaryTimer: ReturnType<typeof setTimeout> | null = null
+
+function openMedicalOrders() {
+  showMedicalOrders.value = true
+}
+
+function inputOrderByPhoto() {
+  showAlert('正在打开相机...\n\n拍照完成后，小康会自动识别医嘱内容并保存到医嘱记忆库。')
+}
+
+function inputOrderByVoice() {
+  showAlert('请开始口述医嘱内容...\n\n小康会自动录音并转写成文字，保存到医嘱记忆库。')
+}
+
+function playMedicalSummary() {
+  showMedicalSummary.value = true
+  playingSummary.value = true
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(60)
+  }
+  if (summaryTimer) clearTimeout(summaryTimer)
+  // 模拟朗读约6秒
+  summaryTimer = setTimeout(() => {
+    playingSummary.value = false
+  }, 6000)
+}
+
+function stopMedicalSummary() {
+  playingSummary.value = false
+  if (summaryTimer) {
+    clearTimeout(summaryTimer)
+    summaryTimer = null
+  }
+}
+
+// ===== 在线医生问诊（任务9）=====
+const showDoctorConsult = ref(false)
+const activeDoctor = ref<typeof onlineDoctors[number] | null>(null)
+const consultMode = ref<'voice' | 'video'>('voice')
+const consultStarted = ref(false)
+const consultConnected = ref(false)
+let consultTimer: ReturnType<typeof setTimeout> | null = null
+
+function openDoctorConsult(doc: typeof onlineDoctors[number]) {
+  if (!doc.online) {
+    showAlert(`${doc.name}医生当前不在线，请稍后再试或选择其他在线医生。`)
+    return
+  }
+  activeDoctor.value = doc
+  consultStarted.value = false
+  consultConnected.value = false
+  showDoctorConsult.value = true
+}
+
+function startConsult(mode: 'voice' | 'video') {
+  if (!activeDoctor.value) return
+  consultMode.value = mode
+  consultStarted.value = true
+  consultConnected.value = false
+  if (consultTimer) clearTimeout(consultTimer)
+  // 模拟接通过程约2秒
+  consultTimer = setTimeout(() => {
+    consultConnected.value = true
+  }, 2000)
+}
+
+function endConsult() {
+  consultConnected.value = false
+  consultStarted.value = false
+  showDoctorConsult.value = false
+  if (consultTimer) {
+    clearTimeout(consultTimer)
+    consultTimer = null
+  }
+}
 </script>
 
 <template>
@@ -359,6 +472,11 @@ const ringOffset = computed(() => circumference * (1 - displayScore.value / 100)
           <span>查看今日健康报告</span>
           <AppIcon name="chevron-right" :size="14" :color="'#fff'" />
         </button>
+        <button class="report-history-btn" @click="viewReportHistory">
+          <AppIcon name="bar-chart" :size="14" :color="'var(--color-brand-dark)'" />
+          <span>历史报告 · 周月年报 · 趋势分析</span>
+          <AppIcon name="chevron-right" :size="12" :color="'var(--color-brand-dark)'" />
+        </button>
       </div>
     </div>
 
@@ -432,6 +550,173 @@ const ringOffset = computed(() => circumference * (1 - displayScore.value / 100)
       </div>
     </div>
 
+    <!-- 在线医生问诊（护理模式/子女照看模式不显示） -->
+    <div class="block" v-if="!userStore.isMinimal && !userStore.isCaregiver">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="stethoscope" :size="18" /> 在线医生问诊</div>
+        <span class="more-link" @click="showAlert('更多科室医生正在接入中')">更多</span>
+      </div>
+      <div class="glass-card consult-card">
+        <!-- 7×24 小时在线横幅（任务5） -->
+        <div class="consult-24h-banner">
+          <div class="consult-24h-left">
+            <div class="consult-24h-icon">
+              <AppIcon name="shield-check" :size="20" :color="'#fff'" />
+            </div>
+            <div class="consult-24h-text">
+              <div class="consult-24h-title">7×24 小时在线 · 随叫随到</div>
+              <div class="consult-24h-sub">像家里有一位随叫随到的医生</div>
+            </div>
+          </div>
+          <div class="consult-24h-pulse">
+            <span class="pulse-dot"></span>
+            <span class="pulse-text">实时在线</span>
+          </div>
+        </div>
+
+        <!-- 功能特性入口（任务5） -->
+        <div class="consult-features">
+          <div class="consult-feature-item" @click="showAlert('常见健康问题即时解答：\n\n小康已连接全科医生团队，可即时解答：\n· 头痛、头晕、失眠等常见问题\n· 慢性病日常管理建议\n· 检验报告解读\n\n点击下方医生卡片即可发起问诊。')">
+            <div class="consult-feature-icon" style="background: rgba(91,184,158,0.15)">
+              <AppIcon name="message-circle" :size="18" :color="'var(--color-brand-dark)'" />
+            </div>
+            <div class="consult-feature-name">即时解答</div>
+            <div class="consult-feature-desc">常见健康问题</div>
+          </div>
+          <div class="consult-feature-item" @click="showAlert('用药咨询：\n\n专业药师在线解答：\n· 药物相互作用查询\n· 用法用量确认\n· 不良反应咨询\n· 药物储存方法\n\n您也可拍照上传药品说明书，小康自动识别。')">
+            <div class="consult-feature-icon" style="background: rgba(246,163,92,0.15)">
+              <AppIcon name="pill" :size="18" :color="'#B8741A'" />
+            </div>
+            <div class="consult-feature-name">用药咨询</div>
+            <div class="consult-feature-desc">专业药师</div>
+          </div>
+          <div class="consult-feature-item" @click="showAlert('急救指导：\n\n突发情况一键呼叫，专业医生远程指导：\n· 跌倒后处理\n· 噎食海姆立克法\n· 中风 FAST 识别\n· 心肺复苏 CPR 步骤\n\n紧急情况请先拨打 120！')">
+            <div class="consult-feature-icon" style="background: rgba(231,76,60,0.12)">
+              <AppIcon name="shield-alert" :size="18" :color="'#C0392B'" />
+            </div>
+            <div class="consult-feature-name">急救指导</div>
+            <div class="consult-feature-desc">远程指导</div>
+          </div>
+          <div class="consult-feature-item" @click="showAlert('健康知识科普：\n\n医生为您讲解健康知识：\n· 高血压/糖尿病日常管理\n· 老年人饮食营养\n· 季节性养生要点\n· 慢性病预防\n\n更有「乐活天地-健康知识科普」为您精准推送。')">
+            <div class="consult-feature-icon" style="background: rgba(111,177,217,0.15)">
+              <AppIcon name="lightbulb" :size="18" :color="'#2E5A88'" />
+            </div>
+            <div class="consult-feature-name">健康科普</div>
+            <div class="consult-feature-desc">专业讲解</div>
+          </div>
+        </div>
+
+        <div class="consult-tip">
+          <AppIcon name="info" :size="13" :color="'var(--color-accent2)'" />
+          <span>在线医生可语音/视频答疑，无需奔波</span>
+        </div>
+        <div class="doctor-list">
+          <div
+            v-for="doc in onlineDoctors"
+            :key="doc.id"
+            class="doctor-card"
+            :class="{ offline: !doc.online }"
+            @click="openDoctorConsult(doc)"
+          >
+            <div class="doctor-avatar-wrap" :class="{ online: doc.online }">
+              <AppIcon :name="doc.avatar" :size="22" :color="doc.online ? '#fff' : 'var(--color-text-tertiary)'" />
+              <span v-if="doc.online" class="doctor-online-dot"></span>
+            </div>
+            <div class="doctor-info">
+              <div class="doctor-name-row">
+                <span class="doctor-name">{{ doc.name }}</span>
+                <span class="doctor-title">{{ doc.title }}</span>
+              </div>
+              <div class="doctor-hospital">{{ doc.hospital }}</div>
+              <div class="doctor-desc">{{ doc.desc }}</div>
+              <div class="doctor-meta">
+                <span class="doctor-queue" :class="{ busy: doc.queue >= 4 }">
+                  <AppIcon name="users" :size="11" /> 前方{{ doc.queue }}人
+                </span>
+                <span class="doctor-rating">
+                  <AppIcon name="star" :size="11" :color="'#F6A35C'" /> {{ doc.rating }}
+                </span>
+                <span class="doctor-status" :class="doc.online ? 'online' : 'offline'">
+                  {{ doc.online ? '在线' : '离线' }}
+                </span>
+              </div>
+            </div>
+            <button v-if="doc.online" class="doctor-btn" @click.stop="openDoctorConsult(doc)">
+              <AppIcon name="mic" :size="14" :color="'#fff'" />
+              <span>问诊</span>
+            </button>
+            <button v-else class="doctor-btn disabled" disabled>
+              <span>不在线</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 记医嘱（护理模式/子女照看模式不显示） -->
+    <div class="block" v-if="!userStore.isMinimal && !userStore.isCaregiver">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="clipboard-list" :size="18" /> AI 记医嘱</div>
+        <span class="more-link" @click="openMedicalOrders">全部医嘱</span>
+      </div>
+      <div class="glass-card orders-card">
+        <div class="orders-input-row">
+          <button class="orders-input-btn photo" @click="inputOrderByPhoto">
+            <span class="orders-input-icon"><AppIcon name="camera" :size="20" :color="'#fff'" /></span>
+            <span class="orders-input-body">
+              <span class="orders-input-title">拍照录入</span>
+              <span class="orders-input-desc">拍处方/医嘱单，自动识别</span>
+            </span>
+          </button>
+          <button class="orders-input-btn voice" @click="inputOrderByVoice">
+            <span class="orders-input-icon"><AppIcon name="mic" :size="20" :color="'#fff'" /></span>
+            <span class="orders-input-body">
+              <span class="orders-input-title">语音录入</span>
+              <span class="orders-input-desc">口述医嘱，自动转写</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="orders-summary-card">
+          <div class="orders-summary-head">
+            <span class="orders-summary-title"><AppIcon name="sparkles" :size="14" :color="'var(--color-brand)'" /> 小康已为您汇总记忆</span>
+            <span class="orders-summary-count">{{ medicalOrders.length }}条医嘱</span>
+          </div>
+          <p class="orders-summary-text">{{ medicalOrderSummary }}</p>
+          <div class="orders-summary-actions">
+            <button class="summary-play-btn" @click="playMedicalSummary">
+              <AppIcon :name="playingSummary ? 'pause' : 'play'" :size="14" :color="'#fff'" />
+              <span>{{ playingSummary ? '正在朗读...' : '播放汇总' }}</span>
+            </button>
+            <span class="summary-tip">每日09:00 自动播报提醒</span>
+          </div>
+        </div>
+
+        <div class="orders-recent-title">近期医嘱</div>
+        <div class="orders-recent-list">
+          <div
+            v-for="order in medicalOrders.slice(0, 2)"
+            :key="order.id"
+            class="order-item"
+            @click="openMedicalOrders"
+          >
+            <div class="order-item-head">
+              <span class="order-source-tag" :class="order.source === '拍照录入' ? 'photo' : 'voice'">
+                <AppIcon :name="order.source === '拍照录入' ? 'camera' : 'mic'" :size="11" />
+                {{ order.source }}
+              </span>
+              <span class="order-date">{{ order.date }}</span>
+            </div>
+            <div class="order-doctor">{{ order.doctor }} · {{ order.hospital }}</div>
+            <p class="order-content">{{ order.content.split('\n')[0] }}...</p>
+            <div class="order-tags">
+              <span v-for="tag in order.tags" :key="tag" class="order-tag">{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 今日用药 -->
     <div class="block">
       <div class="section-title"><AppIcon name="pill" :size="18" /> 今日用药</div>
@@ -475,6 +760,152 @@ const ringOffset = computed(() => circumference * (1 - displayScore.value / 100)
               <AppIcon name="share-2" :size="16" /> 转发
             </button>
             <button class="report-dialog__btn" @click="showReport = false">知道了</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 健康报告中心弹窗（历史/周月年报/趋势/异常预警） -->
+    <transition name="fade">
+      <div v-if="showReportCenter" class="report-mask" @click="showReportCenter = false">
+        <div class="report-dialog report-center-dialog" @click.stop>
+          <div class="report-dialog__title">
+            <AppIcon name="bar-chart" :size="20" /> 健康报告中心
+            <button class="report-center-close" @click="showReportCenter = false">
+              <AppIcon name="x" :size="18" :color="'var(--color-text-tertiary)'" />
+            </button>
+          </div>
+
+          <div class="report-center-body">
+            <!-- 周期切换 -->
+            <div class="period-tabs">
+              <button
+                v-for="tab in periodTabs"
+                :key="tab.key"
+                class="period-tab"
+                :class="{ active: activePeriod === tab.key }"
+                @click="switchPeriod(tab.key)"
+              >
+                <AppIcon :name="tab.icon" :size="13" />
+                <span>{{ tab.label }}</span>
+              </button>
+            </div>
+
+            <!-- 当前报告内容 -->
+            <div class="report-content">
+              <div class="report-content-head">
+                <div class="report-content-title">{{ currentReport.title }}</div>
+                <div class="report-content-date">{{ currentReport.date }}</div>
+              </div>
+
+              <!-- 评分与摘要 -->
+              <div class="report-score-row">
+                <div class="report-score-block">
+                  <div class="report-score-num" :class="currentReport.scoreTrend">
+                    {{ currentReport.score }}
+                    <span class="report-score-unit">分</span>
+                  </div>
+                  <div class="report-score-trend" :class="currentReport.scoreTrend">
+                    <AppIcon
+                      :name="currentReport.scoreTrend === 'up' ? 'trending-up' : currentReport.scoreTrend === 'down' ? 'trending-up' : 'activity'"
+                      :size="12"
+                    />
+                    {{ currentReport.scoreTrend === 'up' ? '环比上升' : currentReport.scoreTrend === 'down' ? '环比下降' : '环比持平' }}
+                  </div>
+                </div>
+                <div class="report-summary">
+                  <p>{{ currentReport.summary }}</p>
+                </div>
+              </div>
+
+              <!-- 异常预警（红字提示） -->
+              <div v-if="currentReport.abnormalities.length" class="abnormality-section">
+                <div class="abnormality-title">
+                  <AppIcon name="alert-triangle" :size="14" :color="'#E74C3C'" />
+                  <span>异常指标预警</span>
+                  <span class="abnormality-count">{{ currentReport.abnormalities.length }} 项需关注</span>
+                </div>
+                <div class="abnormality-list">
+                  <div
+                    v-for="(ab, idx) in currentReport.abnormalities"
+                    :key="idx"
+                    class="abnormality-item"
+                    :class="ab.level"
+                  >
+                    <div class="abnormality-head">
+                      <span class="abnormality-indicator">{{ ab.indicator }}</span>
+                      <span class="abnormality-level-tag" :class="ab.level">
+                        {{ ab.level === 'high' ? '高风险' : '中风险' }}
+                      </span>
+                    </div>
+                    <div class="abnormality-values">
+                      <span class="abnormality-value">当前 {{ ab.value }}</span>
+                      <span class="abnormality-ref">参考 {{ ab.ref }}</span>
+                    </div>
+                    <div class="abnormality-suggest">
+                      <AppIcon name="lightbulb" :size="11" :color="'var(--color-brand)'" />
+                      <span>{{ ab.suggest }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 指标趋势图 -->
+              <div class="trend-section">
+                <div class="trend-section-title">
+                  <AppIcon name="trending-up" :size="14" :color="'var(--color-brand)'" />
+                  <span>指标趋势分析</span>
+                </div>
+                <div class="trend-chart-list">
+                  <div
+                    v-for="(trend, idx) in currentReport.vitalsTrend"
+                    :key="idx"
+                    class="trend-chart-card"
+                  >
+                    <div class="trend-chart-head">
+                      <span class="trend-chart-label">{{ trend.label }}</span>
+                      <span class="trend-chart-status" :class="trend.status">
+                        {{ trend.status === 'warning' ? '需关注' : '正常' }}
+                      </span>
+                    </div>
+                    <svg class="trend-chart-svg" viewBox="0 0 240 60" preserveAspectRatio="none">
+                      <path
+                        :d="buildTrendPath(trend.data, 240, 60, 6)"
+                        :stroke="trend.status === 'warning' ? '#E74C3C' : 'var(--color-brand)'"
+                        stroke-width="2"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        :d="buildTrendPath(trend.data, 240, 60, 6) + ` L234,54 L6,54 Z`"
+                        :fill="trend.status === 'warning' ? 'rgba(231,76,60,0.1)' : 'rgba(91,184,158,0.1)'"
+                      />
+                    </svg>
+                    <div class="trend-chart-foot">
+                      <span class="trend-chart-min">最低 {{ Math.min(...trend.data) }}{{ trend.unit }}</span>
+                      <span class="trend-chart-max">最高 {{ Math.max(...trend.data) }}{{ trend.unit }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 医生建议 -->
+              <div class="report-advice-card">
+                <div class="report-advice-title">
+                  <AppIcon name="lightbulb" :size="14" :color="'var(--color-brand)'" />
+                  <span>小康的建议</span>
+                </div>
+                <p class="report-advice-text">{{ currentReport.advice }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-dialog__actions">
+            <button class="report-dialog__btn ghost" @click="downloadReport">
+              <AppIcon name="download" :size="16" /> 下载
+            </button>
+            <button class="report-dialog__btn" @click="showReportCenter = false">关闭</button>
           </div>
         </div>
       </div>
@@ -540,6 +971,141 @@ const ringOffset = computed(() => circumference * (1 - displayScore.value / 100)
             <p v-else class="analysis-text" style="white-space: pre-line;">{{ analysisResult }}</p>
           </div>
           <button class="report-dialog__btn" @click="showAnalysis = false">知道了</button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 在线医生问诊弹窗 -->
+    <transition name="fade">
+      <div v-if="showDoctorConsult && activeDoctor" class="report-mask" @click="endConsult">
+        <div class="report-dialog consult-dialog" @click.stop>
+          <div class="consult-dialog-head">
+            <div class="consult-doctor-avatar" :class="{ online: activeDoctor.online }">
+              <AppIcon :name="activeDoctor.avatar" :size="28" :color="'#fff'" />
+            </div>
+            <div class="consult-doctor-info">
+              <div class="consult-doctor-name">{{ activeDoctor.name }} · {{ activeDoctor.title }}</div>
+              <div class="consult-doctor-hospital">{{ activeDoctor.hospital }}</div>
+            </div>
+            <button class="consult-close-btn" @click="endConsult">
+              <AppIcon name="x" :size="18" :color="'var(--color-text-tertiary)'" />
+            </button>
+          </div>
+
+          <div class="consult-dialog-body">
+            <!-- 未接通：选择问诊方式 -->
+            <div v-if="!consultConnected" class="consult-connecting">
+              <div v-if="consultStarted" class="consult-connect-state">
+                <div class="consult-wave">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <p class="consult-connect-text">正在为您接通{{ activeDoctor.name }}医生{{ consultMode === 'voice' ? '语音' : '视频' }}问诊...</p>
+                <p class="consult-connect-sub">预计等待 {{ activeDoctor.queue }} 人 · 约 {{ activeDoctor.queue * 2 }} 分钟</p>
+              </div>
+              <div v-else class="consult-mode-select">
+                <p class="consult-mode-tip">请选择问诊方式</p>
+                <div class="consult-mode-actions">
+                  <button class="consult-mode-btn voice" @click="startConsult('voice')">
+                    <span class="consult-mode-icon"><AppIcon name="mic" :size="24" :color="'#fff'" /></span>
+                    <span class="consult-mode-label">语音答疑</span>
+                    <span class="consult-mode-sub">快速咨询</span>
+                  </button>
+                  <button class="consult-mode-btn video" @click="startConsult('video')">
+                    <span class="consult-mode-icon"><AppIcon name="video" :size="24" :color="'#fff'" /></span>
+                    <span class="consult-mode-label">视频问诊</span>
+                    <span class="consult-mode-sub">面对面看诊</span>
+                  </button>
+                </div>
+                <p class="consult-mode-note">医生可查看您的健康档案、生命体征和用药记录，提供精准建议</p>
+              </div>
+            </div>
+
+            <!-- 已接通：问诊进行中 -->
+            <div v-else class="consult-active">
+              <div class="consult-active-head">
+                <span class="consult-active-mode" :class="consultMode">
+                  <AppIcon :name="consultMode === 'voice' ? 'mic' : 'video'" :size="14" :color="'#fff'" />
+                  {{ consultMode === 'voice' ? '语音问诊中' : '视频问诊中' }}
+                </span>
+                <span class="consult-active-timer">00:08</span>
+              </div>
+              <div class="consult-active-wave">
+                <span v-for="n in 9" :key="n" :style="{ animationDelay: (n * 0.1) + 's' }"></span>
+              </div>
+              <div class="consult-active-info">
+                <p class="consult-active-tip">{{ activeDoctor.name }}医生正在为您答疑</p>
+                <p class="consult-active-sub">{{ activeDoctor.desc }}</p>
+              </div>
+              <div class="consult-active-actions">
+                <button class="consult-action-btn mute">
+                  <AppIcon name="mic" :size="20" :color="'#fff'" />
+                  <span>静音</span>
+                </button>
+                <button class="consult-action-btn end" @click="endConsult">
+                  <AppIcon name="phone" :size="20" :color="'#fff'" />
+                  <span>结束问诊</span>
+                </button>
+                <button class="consult-action-btn switch">
+                  <AppIcon name="volume-2" :size="20" :color="'#fff'" />
+                  <span>扬声器</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- AI记医嘱：全部医嘱列表弹窗 -->
+    <transition name="fade">
+      <div v-if="showMedicalOrders" class="report-mask" @click="showMedicalOrders = false">
+        <div class="report-dialog orders-dialog" @click.stop>
+          <div class="report-dialog__title">
+            <AppIcon name="clipboard-list" :size="20" /> 全部医嘱记录
+            <button class="orders-close-btn" @click="showMedicalOrders = false">
+              <AppIcon name="x" :size="18" :color="'var(--color-text-tertiary)'" />
+            </button>
+          </div>
+          <div class="orders-dialog-body">
+            <div v-for="order in medicalOrders" :key="order.id" class="orders-dialog-item">
+              <div class="orders-dialog-item-head">
+                <span class="order-source-tag" :class="order.source === '拍照录入' ? 'photo' : 'voice'">
+                  <AppIcon :name="order.source === '拍照录入' ? 'camera' : 'mic'" :size="11" />
+                  {{ order.source }}
+                </span>
+                <span class="order-date">{{ order.date }}</span>
+              </div>
+              <div class="order-doctor">{{ order.doctor }} · {{ order.hospital }}</div>
+              <p class="order-content-full" style="white-space: pre-line;">{{ order.content }}</p>
+              <div class="order-tags">
+                <span v-for="tag in order.tags" :key="tag" class="order-tag">{{ tag }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="report-dialog__btn" @click="showMedicalOrders = false">关闭</button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- AI记医嘱：医嘱汇总播放弹窗 -->
+    <transition name="fade">
+      <div v-if="showMedicalSummary" class="report-mask" @click="stopMedicalSummary(); showMedicalSummary = false">
+        <div class="report-dialog summary-dialog" @click.stop>
+          <div class="report-dialog__title">
+            <AppIcon name="sparkles" :size="20" :color="'var(--color-brand)'" /> 医嘱汇总朗读
+          </div>
+          <div class="summary-dialog-body">
+            <div class="summary-play-wave" :class="{ playing: playingSummary }">
+              <span v-for="n in 7" :key="n" :style="{ animationDelay: (n * 0.12) + 's' }"></span>
+            </div>
+            <p class="summary-play-status">{{ playingSummary ? '小康正在为您朗读医嘱汇总...' : '朗读已暂停' }}</p>
+            <p class="summary-play-text" style="white-space: pre-line;">{{ medicalOrderSummary }}</p>
+          </div>
+          <div class="report-dialog__actions">
+            <button v-if="playingSummary" class="report-dialog__btn ghost" @click="stopMedicalSummary">停止朗读</button>
+            <button v-else class="report-dialog__btn ghost" @click="playMedicalSummary">继续朗读</button>
+            <button class="report-dialog__btn" @click="stopMedicalSummary(); showMedicalSummary = false">关闭</button>
+          </div>
         </div>
       </div>
     </transition>
@@ -1714,4 +2280,1130 @@ const ringOffset = computed(() => circumference * (1 - displayScore.value / 100)
 }
 .coach-start-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(91, 184, 158, 0.4); filter: brightness(1.05); }
 .coach-start-btn:active { transform: scale(0.95); }
+
+/* ===== 在线医生问诊 ===== */
+.consult-card {
+  padding: var(--space-3) var(--space-4);
+}
+.consult-tip {
+  display: flex; align-items: center; gap: 6px;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  background: rgba(111, 177, 217, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+.doctor-list {
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.doctor-card {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(91, 184, 158, 0.12);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.doctor-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(91, 184, 158, 0.3);
+  box-shadow: 0 4px 14px rgba(45, 52, 54, 0.08);
+}
+.doctor-card.offline {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.doctor-avatar-wrap {
+  position: relative;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(91, 184, 158, 0.15);
+  flex-shrink: 0;
+}
+.doctor-avatar-wrap.online {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.3);
+}
+.doctor-online-dot {
+  position: absolute; right: 0; bottom: 0;
+  width: 10px; height: 10px;
+  background: #4ade80;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+.doctor-info { flex: 1; min-width: 0; }
+.doctor-name-row {
+  display: flex; align-items: baseline; gap: 6px;
+  margin-bottom: 2px;
+}
+.doctor-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+.doctor-title {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+.doctor-hospital {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+.doctor-desc {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doctor-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.625rem;
+}
+.doctor-queue {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px 6px;
+  background: rgba(91, 184, 158, 0.1);
+  color: var(--color-brand-dark);
+  border-radius: var(--radius-full);
+}
+.doctor-queue.busy {
+  background: rgba(246, 163, 92, 0.15);
+  color: #C97A2B;
+}
+.doctor-rating {
+  display: inline-flex; align-items: center; gap: 2px;
+  color: var(--color-text-secondary);
+}
+.doctor-status {
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+.doctor-status.online {
+  background: rgba(74, 222, 128, 0.15);
+  color: #16a34a;
+}
+.doctor-status.offline {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--color-text-tertiary);
+}
+.doctor-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(91, 184, 158, 0.3);
+  transition: all var(--transition-fast);
+}
+.doctor-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.4);
+  filter: brightness(1.05);
+}
+.doctor-btn.disabled {
+  background: rgba(148, 163, 184, 0.3);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ===== AI 记医嘱 ===== */
+.orders-card {
+  padding: var(--space-3) var(--space-4);
+}
+.orders-input-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.orders-input-btn {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+.orders-input-btn.photo {
+  background: linear-gradient(135deg, #FFB199, #FF8E8E);
+  box-shadow: 0 4px 12px rgba(255, 142, 142, 0.3);
+}
+.orders-input-btn.voice {
+  background: linear-gradient(135deg, #C8F0E0, #5BB89E);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.3);
+}
+.orders-input-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 16px rgba(91, 184, 158, 0.4);
+}
+.orders-input-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.orders-input-body {
+  display: flex; flex-direction: column; gap: 1px;
+  min-width: 0;
+}
+.orders-input-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #fff;
+}
+.orders-input-desc {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orders-summary-card {
+  padding: var(--space-3);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.08), rgba(91, 184, 158, 0.15));
+  border: 1px solid rgba(91, 184, 158, 0.2);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+}
+.orders-summary-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.orders-summary-title {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-brand-dark);
+}
+.orders-summary-count {
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+  padding: 2px 8px;
+  background: rgba(91, 184, 158, 0.1);
+  border-radius: var(--radius-full);
+}
+.orders-summary-text {
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin: 0 0 var(--space-2);
+  white-space: pre-line;
+  max-height: 90px;
+  overflow-y: auto;
+}
+.orders-summary-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-2);
+}
+.summary-play-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(91, 184, 158, 0.3);
+  transition: all var(--transition-fast);
+}
+.summary-play-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.4);
+}
+.summary-tip {
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+}
+.orders-recent-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+.orders-recent-list {
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.order-item {
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(91, 184, 158, 0.1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.order-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(91, 184, 158, 0.3);
+  box-shadow: 0 4px 12px rgba(45, 52, 54, 0.08);
+}
+.order-item-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.order-source-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.order-source-tag.photo {
+  background: rgba(255, 142, 142, 0.15);
+  color: #C05050;
+}
+.order-source-tag.voice {
+  background: rgba(91, 184, 158, 0.15);
+  color: var(--color-brand-dark);
+}
+.order-date {
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+}
+.order-doctor {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+.order-content {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 6px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-content-full {
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  margin: 0 0 6px;
+  line-height: 1.6;
+}
+.order-tags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+.order-tag {
+  font-size: 0.625rem;
+  padding: 1px 8px;
+  background: rgba(91, 184, 158, 0.1);
+  color: var(--color-brand-dark);
+  border-radius: var(--radius-full);
+}
+
+/* ===== 在线医生问诊弹窗 ===== */
+.consult-dialog {
+  max-width: 380px;
+  width: calc(100% - 32px);
+}
+.consult-dialog-head {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.08), rgba(91, 184, 158, 0.02));
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.consult-doctor-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.3);
+  flex-shrink: 0;
+}
+.consult-doctor-info { flex: 1; min-width: 0; }
+.consult-doctor-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+.consult-doctor-hospital {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+.consult-close-btn {
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.1);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast);
+}
+.consult-close-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+  transform: rotate(90deg);
+}
+.consult-dialog-body {
+  padding: var(--space-5) var(--space-4);
+}
+.consult-connecting {
+  text-align: center;
+}
+.consult-connect-state {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+.consult-wave {
+  display: flex; align-items: center; gap: 4px;
+  height: 40px;
+}
+.consult-wave span {
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--color-brand), var(--color-brand-dark));
+  border-radius: 2px;
+  animation: consult-wave-anim 1.2s ease-in-out infinite;
+}
+.consult-wave span:nth-child(1) { animation-delay: 0s; height: 60%; }
+.consult-wave span:nth-child(2) { animation-delay: 0.15s; height: 80%; }
+.consult-wave span:nth-child(3) { animation-delay: 0.3s; height: 100%; }
+.consult-wave span:nth-child(4) { animation-delay: 0.45s; height: 80%; }
+.consult-wave span:nth-child(5) { animation-delay: 0.6s; height: 60%; }
+@keyframes consult-wave-anim {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+.consult-connect-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+.consult-connect-sub {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+.consult-mode-select {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+}
+.consult-mode-tip {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+.consult-mode-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);
+  width: 100%;
+}
+.consult-mode-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--space-4) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.consult-mode-btn.voice {
+  background: linear-gradient(135deg, #C8F0E0, #5BB89E);
+  box-shadow: 0 6px 18px rgba(91, 184, 158, 0.3);
+}
+.consult-mode-btn.video {
+  background: linear-gradient(135deg, #FFB199, #FF8E8E);
+  box-shadow: 0 6px 18px rgba(255, 142, 142, 0.3);
+}
+.consult-mode-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+.consult-mode-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex; align-items: center; justify-content: center;
+}
+.consult-mode-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #fff;
+}
+.consult-mode-sub {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+.consult-mode-note {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  margin: var(--space-2) 0 0;
+  text-align: center;
+  line-height: 1.5;
+}
+.consult-active {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+}
+.consult-active-head {
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.consult-active-mode {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #fff;
+}
+.consult-active-mode.voice {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+}
+.consult-active-mode.video {
+  background: linear-gradient(135deg, #FF8E8E, #FD6585);
+}
+.consult-active-timer {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.consult-active-wave {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  height: 60px;
+  margin: var(--space-2) 0;
+}
+.consult-active-wave span {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--color-brand), var(--color-brand-dark));
+  border-radius: 2px;
+  animation: consult-wave-anim 1s ease-in-out infinite;
+}
+.consult-active-info { text-align: center; }
+.consult-active-tip {
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+.consult-active-sub {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+.consult-active-actions {
+  display: flex; align-items: center; justify-content: center; gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.consult-action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.625rem;
+  color: #fff;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  min-width: 64px;
+}
+.consult-action-btn.mute {
+  background: rgba(111, 177, 217, 0.8);
+  box-shadow: 0 4px 10px rgba(111, 177, 217, 0.3);
+}
+.consult-action-btn.switch {
+  background: rgba(91, 184, 158, 0.8);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.3);
+}
+.consult-action-btn.end {
+  background: linear-gradient(135deg, #FF6B6B, #E74C3C);
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+}
+.consult-action-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* ===== AI记医嘱弹窗 ===== */
+.orders-dialog {
+  max-width: 380px;
+  width: calc(100% - 32px);
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+.orders-dialog .report-dialog__title {
+  display: flex; align-items: center; gap: 6px;
+  justify-content: space-between;
+}
+.orders-close-btn {
+  margin-left: auto;
+  width: 28px; height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.1);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast);
+}
+.orders-close-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+  transform: rotate(90deg);
+}
+.orders-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+.orders-dialog-item {
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+}
+.orders-dialog-item-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+/* ===== 医嘱汇总播放弹窗 ===== */
+.summary-dialog {
+  max-width: 380px;
+  width: calc(100% - 32px);
+}
+.summary-dialog-body {
+  padding: var(--space-4);
+  text-align: center;
+}
+.summary-play-wave {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  height: 50px;
+  margin-bottom: var(--space-3);
+}
+.summary-play-wave span {
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--color-brand), var(--color-brand-dark));
+  border-radius: 2px;
+  animation: consult-wave-anim 1.2s ease-in-out infinite;
+  opacity: 0.4;
+}
+.summary-play-wave.playing span {
+  opacity: 1;
+}
+.summary-play-wave:not(.playing) span {
+  animation: none;
+  transform: scaleY(0.4);
+}
+.summary-play-status {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  margin: 0 0 var(--space-3);
+}
+.summary-play-text {
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  margin: 0;
+  text-align: left;
+  background: rgba(91, 184, 158, 0.06);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(91, 184, 158, 0.12);
+}
+
+/* ===== 在线问诊 7×24 横幅 + 功能特性（任务5） ===== */
+.consult-24h-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.18), rgba(91, 184, 158, 0.06));
+  border: 1px solid rgba(91, 184, 158, 0.25);
+  border-radius: var(--radius-sm);
+}
+.consult-24h-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.consult-24h-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(91, 184, 158, 0.35);
+  flex-shrink: 0;
+}
+.consult-24h-text {
+  flex: 1;
+  min-width: 0;
+}
+.consult-24h-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-brand-dark);
+  margin-bottom: 2px;
+}
+.consult-24h-sub {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+.consult-24h-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(91, 184, 158, 0.15);
+  border-radius: 12px;
+}
+.consult-24h-pulse .pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 0 rgba(91, 184, 158, 0.6);
+  animation: consultPulse 1.8s infinite;
+}
+@keyframes consultPulse {
+  0% { box-shadow: 0 0 0 0 rgba(91, 184, 158, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(91, 184, 158, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(91, 184, 158, 0); }
+}
+.consult-24h-pulse .pulse-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+}
+.consult-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.consult-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-2) 4px;
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.consult-feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border-color: rgba(91, 184, 158, 0.3);
+}
+.consult-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.consult-feature-name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.consult-feature-desc {
+  font-size: 0.6rem;
+  color: var(--color-text-tertiary);
+}
+
+/* ===== 历史报告入口按钮 ===== */
+.report-history-btn {
+  width: 100%;
+  min-height: 38px;
+  margin-top: var(--space-3);
+  padding: 0 var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: rgba(91, 184, 158, 0.08);
+  border: 1px solid rgba(91, 184, 158, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.report-history-btn span {
+  flex: 1;
+  text-align: left;
+}
+.report-history-btn:hover {
+  background: rgba(91, 184, 158, 0.16);
+  border-color: rgba(91, 184, 158, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.18);
+}
+
+/* ===== 健康报告中心弹窗 ===== */
+.report-center-dialog {
+  max-width: 380px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+}
+.report-center-dialog .report-dialog__title {
+  position: relative;
+  margin-bottom: var(--space-3);
+  padding-right: 32px;
+}
+.report-center-close {
+  position: absolute;
+  right: -4px;
+  top: -2px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.report-center-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.report-center-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+.report-center-body::-webkit-scrollbar {
+  width: 4px;
+}
+.report-center-body::-webkit-scrollbar-thumb {
+  background: rgba(91, 184, 158, 0.35);
+  border-radius: 2px;
+}
+.report-center-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ===== 周期切换标签 ===== */
+.period-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2);
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: var(--radius-sm);
+}
+.period-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.period-tab:hover {
+  background: rgba(91, 184, 158, 0.12);
+  color: var(--color-brand-dark);
+}
+.period-tab.active {
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+  box-shadow: 0 2px 8px rgba(91, 184, 158, 0.32);
+}
+
+/* ===== 报告内容 ===== */
+.report-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.report-content-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+}
+.report-content-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.report-content-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ===== 评分块 ===== */
+.report-score-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.report-score-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 84px;
+  padding: var(--space-3) 0;
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.12), rgba(91, 184, 158, 0.04));
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(91, 184, 158, 0.18);
+}
+.report-score-num {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--color-brand-dark);
+}
+.report-score-num.up { color: #E74C3C; }
+.report-score-num.down { color: var(--color-brand); }
+.report-score-num.flat { color: var(--color-text-secondary); }
+.report-score-unit {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  margin-left: 2px;
+}
+.report-score-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+}
+.report-score-trend.up { color: #E74C3C; }
+.report-score-trend.down { color: var(--color-brand); }
+.report-score-trend.flat { color: var(--color-text-tertiary); }
+.report-summary {
+  flex: 1;
+  min-width: 0;
+}
+.report-summary p {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ===== 异常预警（红字提示） ===== */
+.abnormality-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.06), rgba(231, 76, 60, 0.02));
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  border-radius: var(--radius-sm);
+}
+.abnormality-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: #E74C3C;
+}
+.abnormality-count {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  color: #E74C3C;
+  background: rgba(231, 76, 60, 0.12);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.abnormality-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.abnormality-item {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-solid);
+  border-radius: 8px;
+  border-left: 3px solid;
+}
+.abnormality-item.high {
+  border-left-color: #E74C3C;
+  background: rgba(231, 76, 60, 0.04);
+}
+.abnormality-item.mid {
+  border-left-color: #F39C12;
+  background: rgba(243, 156, 18, 0.04);
+}
+.abnormality-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.abnormality-indicator {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.abnormality-level-tag {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.abnormality-level-tag.high {
+  color: #fff;
+  background: #E74C3C;
+}
+.abnormality-level-tag.mid {
+  color: #fff;
+  background: #F39C12;
+}
+.abnormality-values {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+.abnormality-value {
+  color: #E74C3C;
+  font-weight: var(--weight-semibold);
+}
+.abnormality-ref {
+  color: var(--color-text-tertiary);
+}
+.abnormality-suggest {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== 指标趋势图 ===== */
+.trend-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.trend-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.trend-chart-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+.trend-chart-card {
+  padding: var(--space-2);
+  background: rgba(91, 184, 158, 0.04);
+  border: 1px solid rgba(91, 184, 158, 0.12);
+  border-radius: 8px;
+}
+.trend-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.trend-chart-label {
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+}
+.trend-chart-status {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.trend-chart-status.warning {
+  color: #E74C3C;
+  background: rgba(231, 76, 60, 0.12);
+}
+.trend-chart-status.normal {
+  color: var(--color-brand);
+  background: rgba(91, 184, 158, 0.12);
+}
+.trend-chart-svg {
+  width: 100%;
+  height: 48px;
+  display: block;
+}
+.trend-chart-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+/* ===== 医生建议 ===== */
+.report-advice-card {
+  padding: var(--space-3);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.1), rgba(91, 184, 158, 0.02));
+  border: 1px solid rgba(91, 184, 158, 0.2);
+  border-radius: var(--radius-sm);
+}
+.report-advice-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand-dark);
+  margin-bottom: var(--space-2);
+}
+.report-advice-text {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+}
 </style>

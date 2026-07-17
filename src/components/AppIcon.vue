@@ -17,6 +17,8 @@ import {
   CalendarHeart, X, BedDouble, PersonStanding, Candy, CloudRain,
   ShieldCheck, Info, Watch, Cpu, Battery, RefreshCw, ChevronDown, GlassWater,
   BookHeart, Trophy, ScrollText, Hand, Rocket,
+  Newspaper, Play, Pause, Mountain, ZoomIn, Scissors, Book, Carrot,
+  Download, Image as ImageIcon, Wrench, HardHat,
 } from 'lucide-vue-next'
 
 // 图标名称 -> 组件映射
@@ -143,6 +145,18 @@ const map: Record<string, Component> = {
   'scroll-text': ScrollText,
   hand: Hand,
   rocket: Rocket,
+  newspaper: Newspaper,
+  play: Play,
+  pause: Pause,
+  mountain: Mountain,
+  'zoom-in': ZoomIn,
+  scissors: Scissors,
+  book: Book,
+  carrot: Carrot,
+  download: Download,
+  image: ImageIcon,
+  wrench: Wrench,
+  'hard-hat': HardHat,
 }
 
 const props = withDefaults(defineProps<{

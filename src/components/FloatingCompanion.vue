@@ -83,6 +83,7 @@ function quickAsk(text: string) {
   position: relative;
   width: 56px;
   height: 56px;
+  min-height: 56px !important;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, var(--color-brand-light), var(--color-brand), var(--color-brand-dark));

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile } from '@/mock'
+import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile, voiceAudiobooks, voiceNews, scrollAppointments, alertCenter, elderlyMeals, elderlyRetrofit } from '@/mock'
 import { useUserStore } from '@/stores/user'
 import AppIcon from '@/components/AppIcon.vue'
 import BookingFlow from '@/components/BookingFlow.vue'
@@ -9,6 +9,43 @@ import BookingFlow from '@/components/BookingFlow.vue'
 const router = useRouter()
 const userStore = useUserStore()
 const showBooking = ref(false)
+
+// 视障语音：震动确认小字提示
+const voiceHint = ref('')
+const showVoiceHint = ref(false)
+let voiceHintTimer: ReturnType<typeof setTimeout> | null = null
+function vibrateConfirm(msg: string) {
+  // 触发设备震动（支持的设备上）
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(60)
+  }
+  voiceHint.value = msg
+  showVoiceHint.value = true
+  if (voiceHintTimer) clearTimeout(voiceHintTimer)
+  voiceHintTimer = setTimeout(() => {
+    showVoiceHint.value = false
+  }, 2200)
+}
+
+// 视障语音：听书模块
+const playingAudiobook = ref<number | null>(null)
+function playAudiobook(id: number, title: string) {
+  playingAudiobook.value = playingAudiobook.value === id ? null : id
+  vibrateConfirm(`已${playingAudiobook.value ? '开始播放' : '暂停'}：${title}`)
+}
+
+// 视障语音：听新闻模块
+const playingNews = ref<number | null>(null)
+function playNews(id: number, title: string) {
+  playingNews.value = playingNews.value === id ? null : id
+  vibrateConfirm(`正在朗读：${title}`)
+}
+
+// 视障语音：语音挂号（复用 BookingFlow 组件）
+function openVoiceBooking() {
+  showBooking.value = true
+  vibrateConfirm('已打开语音挂号')
+}
 
 // 今日AI生活规划：默认展示前6条，点击查看更多展示全部
 const showAllSchedule = ref(false)
@@ -19,18 +56,84 @@ const displaySchedule = computed(() =>
 // 生活服务弹窗
 const showLifeService = ref(false)
 const activeService = ref<typeof lifeServices[number] | null>(null)
+const showShopMore = ref(false)
+// 康养商城更多适老产品（仅 shop 项含 moreItems，需单独类型化以避免 TS 联合类型推断为 never）
+const shopMoreItems = computed(() => {
+  const svc = activeService.value
+  if (svc && svc.key === 'shop' && 'moreItems' in svc) {
+    return (svc as { moreItems: { name: string; price: number; desc: string }[] }).moreItems
+  }
+  return []
+})
 function openLifeService(svc: typeof lifeServices[number]) {
   activeService.value = svc
+  showShopMore.value = false
   showLifeService.value = true
 }
 function bookService(name: string) {
   showAlert(`已预约：${name}\n小康会帮您安排具体时间，请留意电话通知。`)
   showLifeService.value = false
 }
+function buyProduct(name: string) {
+  showAlert(`已加入购物车：${name}\n您可继续选购，或在「我的-我的订单」中结算。`)
+}
+function toggleShopMore() {
+  showShopMore.value = !showShopMore.value
+}
+
+// ===== 任务9：长者助餐增强 =====
+function orderMeal(name: string) {
+  showAlert(`已下单：${name}\n\n小康会通知社区食堂备餐，预计 ${elderlyMeals.delivery.estimatedTime} 送餐上门。`)
+}
+function applyMealPlan(name: string) {
+  showAlert(`已为您定制：${name}\n\n小康会按此套餐每日搭配菜品，可在「我的-助餐订单」中调整。`)
+}
+
+// ===== 任务10：适老化改造 =====
+const retrofitTab = ref<'schemes' | 'subsidies' | 'teams'>('schemes')
+function consultRetrofit(schemeName: string) {
+  showAlert(`已预约咨询：${schemeName}\n\n小康会安排专业团队上门评估，3 个工作日内联系您。`)
+}
+function applySubsidy(name: string) {
+  showAlert(`正在为您查询补贴资格：${name}\n\n小康已预填您的老人信息，提交后 5 个工作日内出结果。`)
+}
+function contactTeam(name: string) {
+  showAlert(`已为您对接：${name}\n\n施工团队会在 24 小时内电话联系您，安排免费上门测量。`)
+}
 
 function goRoute(path: string) {
   router.push(path)
 }
+
+// 活力老人模式：预约活动滚动提醒（自动轮播）
+const activeApptIdx = ref(0)
+let apptTimer: ReturnType<typeof setInterval> | null = null
+function startApptRotation() {
+  if (apptTimer) clearInterval(apptTimer)
+  apptTimer = setInterval(() => {
+    activeApptIdx.value = (activeApptIdx.value + 1) % scrollAppointments.length
+  }, 4000)
+}
+function stopApptRotation() {
+  if (apptTimer) {
+    clearInterval(apptTimer)
+    apptTimer = null
+  }
+}
+function switchAppt(idx: number) {
+  activeApptIdx.value = idx
+  // 重启轮播
+  startApptRotation()
+}
+function viewApptDetail(appt: typeof scrollAppointments[number]) {
+  showAlert(`${appt.title}\n\n时间：${appt.time}\n地点：${appt.location}\n\n${appt.desc}`)
+}
+onMounted(() => {
+  startApptRotation()
+})
+onUnmounted(() => {
+  stopApptRotation()
+})
 
 // 统一自定义提示弹窗（替代原生 alert）
 const showAppAlert = ref(false)
@@ -81,6 +184,10 @@ onUnmounted(() => {
   if (cameraTimer) {
     clearInterval(cameraTimer)
     cameraTimer = null
+  }
+  if (voiceHintTimer) {
+    clearTimeout(voiceHintTimer)
+    voiceHintTimer = null
   }
 })
 
@@ -303,6 +410,52 @@ function remindMomMed() {
   showMedReminder.value = false
 }
 
+// ===== 子女模式：预警中心（任务2）=====
+const showAlertCenter = ref(false)
+const alertFilter = ref<'all' | 'high' | 'unhandled'>('all')
+const alertList = ref(alertCenter.map(a => ({ ...a, handled: false })))
+
+const filteredAlerts = computed(() => {
+  if (alertFilter.value === 'high') return alertList.value.filter(a => a.level === 'high')
+  if (alertFilter.value === 'unhandled') return alertList.value.filter(a => !a.handled)
+  return alertList.value
+})
+
+const alertStats = computed(() => {
+  const high = alertList.value.filter(a => a.level === 'high' && !a.handled).length
+  const mid = alertList.value.filter(a => a.level === 'mid' && !a.handled).length
+  const handled = alertList.value.filter(a => a.handled).length
+  return { high, mid, handled, total: alertList.value.length }
+})
+
+function openAlertCenter() {
+  showAlertCenter.value = true
+}
+function handleAlert(idx: number) {
+  const item = alertList.value[idx]
+  if (item) item.handled = true
+  showAlert(`已处理预警：${item?.title}\n\n小康已记录处理结果，并将同步给紧急联系人。`)
+}
+function notifyContacts(idx: number) {
+  const item = alertList.value[idx]
+  if (!item) return
+  showAlert(`已通知紧急联系人：\n\n${item.contacts.join('、')}\n\n预警内容：${item.title}\n发送方式：短信 + APP推送`)
+}
+function alertLevelText(level: string) {
+  return level === 'high' ? '高风险' : level === 'mid' ? '中风险' : '低风险'
+}
+function alertTypeIcon(type: string) {
+  const map: Record<string, string> = {
+    fall: 'person-standing',
+    vital: 'heart-pulse',
+    inactivity: 'bed-double',
+    medication: 'pill',
+    device: 'cpu',
+    ai: 'bot',
+  }
+  return map[type] || 'alert-triangle'
+}
+
 // 子女模式：远程摄像头
 const cameraOn = ref(false)
 const cameraTime = ref('')
@@ -367,6 +520,50 @@ function openFeatureDialog(title: string, content: string, icon: string) {
             <span>问问小康</span>
           </button>
         </div>
+      </section>
+
+      <!-- 预约活动滚动提醒（活力老人模式） -->
+      <section class="appt-scroll-section">
+        <div class="appt-scroll-header">
+          <span class="appt-scroll-title">
+            <AppIcon name="calendar-check" :size="14" :color="'var(--color-brand)'" />
+            预约提醒
+          </span>
+          <span class="appt-scroll-dots">
+            <span
+              v-for="(appt, idx) in scrollAppointments"
+              :key="idx"
+              class="appt-dot"
+              :class="{ active: idx === activeApptIdx }"
+              @click="switchAppt(idx)"
+            ></span>
+          </span>
+        </div>
+        <transition name="appt-fade" mode="out-in">
+          <div
+            :key="activeApptIdx"
+            class="appt-scroll-card"
+            @click="viewApptDetail(scrollAppointments[activeApptIdx])"
+          >
+            <span class="appt-scroll-icon" :style="{ background: scrollAppointments[activeApptIdx].icon === 'mountain' ? 'linear-gradient(135deg, #C8F0E0, #5BB89E)' : scrollAppointments[activeApptIdx].icon === 'book-open' ? 'linear-gradient(135deg, #FCE58A, #F6A35C)' : 'linear-gradient(135deg, #FFB199, #FF8E8E)' }">
+              <AppIcon :name="scrollAppointments[activeApptIdx].icon" :size="20" :color="'#fff'" />
+            </span>
+            <div class="appt-scroll-body">
+              <div class="appt-scroll-row1">
+                <span class="appt-scroll-name">{{ scrollAppointments[activeApptIdx].title }}</span>
+                <span class="appt-scroll-time">{{ scrollAppointments[activeApptIdx].time }}</span>
+              </div>
+              <div class="appt-scroll-row2">
+                <span class="appt-scroll-loc">
+                  <AppIcon name="map-pin" :size="11" :color="'var(--color-text-tertiary)'" />
+                  {{ scrollAppointments[activeApptIdx].location }}
+                </span>
+                <span class="appt-scroll-desc">{{ scrollAppointments[activeApptIdx].desc }}</span>
+              </div>
+            </div>
+            <AppIcon name="chevron-right" :size="16" :color="'var(--color-text-tertiary)'" />
+          </div>
+        </transition>
       </section>
 
       <!-- 健康仪表盘 -->
@@ -701,35 +898,29 @@ function openFeatureDialog(title: string, content: string, icon: string) {
         </button>
       </section>
 
-      <!-- 紧急求助 -->
-      <section class="voice-sos-card">
-        <button
-          class="sos-hold-btn"
-          :class="{ pressing: sosPressing }"
-          @touchstart.prevent="startSosPress"
-          @touchend.prevent="endSosPress"
-          @touchcancel.prevent="endSosPress"
-          @mousedown.prevent="startSosPress"
-          @mouseup.prevent="endSosPress"
-          @mouseleave="endSosPress"
-        >
-          <svg class="sos-ring" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-            <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="3" />
-            <circle
-              cx="50" cy="50" r="46" fill="none"
-              stroke="#fff" stroke-width="3" stroke-linecap="round"
-              :stroke-dasharray="289.03"
-              :stroke-dashoffset="289.03 * (1 - sosProgress)"
-              transform="rotate(-90 50 50)"
-            />
-          </svg>
-          <div class="sos-content">
-            <AppIcon name="siren" :size="32" color="#fff" />
-            <span class="sos-text">{{ sosPressing ? '正在识别...' : '请连说两次求助！' }}</span>
+      <!-- 温馨提示：通过小康对话进行求助、听书、听新闻 -->
+      <section class="voice-tip-card">
+        <div class="voice-tip-icon">
+          <AppIcon name="lightbulb" :size="24" :color="'var(--color-brand-dark)'" />
+        </div>
+        <div class="voice-tip-content">
+          <div class="voice-tip-title">和小康说说话</div>
+          <div class="voice-tip-list">
+            <span>想求助？连说两次「求助」</span>
+            <span>想听书？说「小康，我想听书」</span>
+            <span>想听新闻？说「小康，播放新闻」</span>
+            <span>想挂号？说「小康，帮我挂号」</span>
           </div>
-        </button>
-        <div class="voice-sos-hint">请连续说2声求助发起救援</div>
+        </div>
       </section>
+
+      <!-- 震动确认小字提示 -->
+      <transition name="voice-hint-fade">
+        <div v-if="showVoiceHint" class="voice-hint-toast">
+          <AppIcon name="check-circle" :size="18" :color="'var(--color-brand)'" />
+          <span>{{ voiceHint }}</span>
+        </div>
+      </transition>
 
     </template>
 
@@ -1000,6 +1191,71 @@ function openFeatureDialog(title: string, content: string, icon: string) {
         <button class="med-alert-btn" @click="remindMomMed">语音提醒</button>
       </section>
 
+      <!-- 预警中心（任务2） -->
+      <section class="caregiver-section alert-center-section">
+        <div class="alert-center-head">
+          <div class="alert-center-title-row">
+            <AppIcon name="shield-alert" :size="18" :color="'#E74C3C'" />
+            <span class="alert-center-title">AI 预警中心</span>
+            <span v-if="alertStats.high > 0" class="alert-center-badge high">{{ alertStats.high }} 项高风险</span>
+            <span v-else-if="alertStats.mid > 0" class="alert-center-badge mid">{{ alertStats.mid }} 项需关注</span>
+            <span v-else class="alert-center-badge normal">全部正常</span>
+          </div>
+          <button class="alert-center-more" @click="openAlertCenter">
+            查看全部 <AppIcon name="chevron-right" :size="12" />
+          </button>
+        </div>
+
+        <div class="alert-center-stats">
+          <div class="alert-stat-item">
+            <div class="alert-stat-num high">{{ alertStats.high }}</div>
+            <div class="alert-stat-label">高风险</div>
+          </div>
+          <div class="alert-stat-item">
+            <div class="alert-stat-num mid">{{ alertStats.mid }}</div>
+            <div class="alert-stat-label">中风险</div>
+          </div>
+          <div class="alert-stat-item">
+            <div class="alert-stat-num handled">{{ alertStats.handled }}</div>
+            <div class="alert-stat-label">已处理</div>
+          </div>
+          <div class="alert-stat-item">
+            <div class="alert-stat-num total">{{ alertStats.total }}</div>
+            <div class="alert-stat-label">总预警</div>
+          </div>
+        </div>
+
+        <!-- 最新预警预览（前2条未处理的高/中风险） -->
+        <div class="alert-preview-list">
+          <div
+            v-for="item in alertList.filter(a => !a.handled && a.level !== 'low').slice(0, 2)"
+            :key="item.id"
+            class="alert-preview-item"
+            :class="item.level"
+            @click="openAlertCenter"
+          >
+            <div class="alert-preview-icon" :class="item.level">
+              <AppIcon :name="alertTypeIcon(item.type)" :size="16" :color="'#fff'" />
+            </div>
+            <div class="alert-preview-body">
+              <div class="alert-preview-title-row">
+                <span class="alert-preview-title">{{ item.title }}</span>
+                <span class="alert-preview-level" :class="item.level">{{ alertLevelText(item.level) }}</span>
+              </div>
+              <div class="alert-preview-desc">{{ item.desc }}</div>
+              <div class="alert-preview-meta">
+                <span class="alert-preview-time"><AppIcon name="clock" :size="10" /> {{ item.time }}</span>
+                <span v-if="item.notified" class="alert-preview-notified"><AppIcon name="check-circle" :size="10" /> 已通知联系人</span>
+              </div>
+            </div>
+          </div>
+          <div v-if="alertList.filter(a => !a.handled && a.level !== 'low').length === 0" class="alert-preview-empty">
+            <AppIcon name="check-circle" :size="24" :color="'var(--color-brand)'" />
+            <span>暂无待处理预警，妈妈状态良好</span>
+          </div>
+        </div>
+      </section>
+
       <!-- 实时数据 -->
       <section class="caregiver-section">
         <div class="caregiver-section-title">实时健康</div>
@@ -1111,6 +1367,104 @@ function openFeatureDialog(title: string, content: string, icon: string) {
       </div>
     </transition>
 
+    <!-- 子女模式：预警中心完整弹窗（任务2） -->
+    <transition name="fade">
+      <div v-if="showAlertCenter" class="alert-center-mask" @click="showAlertCenter = false">
+        <div class="alert-center-dialog" @click.stop>
+          <div class="alert-center-dialog-head">
+            <div class="alert-center-dialog-title">
+              <AppIcon name="shield-alert" :size="20" :color="'#E74C3C'" />
+              <span>AI 预警中心</span>
+            </div>
+            <button class="alert-center-dialog-close" @click="showAlertCenter = false">
+              <AppIcon name="x" :size="18" :color="'var(--color-text-tertiary)'" />
+            </button>
+          </div>
+
+          <!-- 筛选 tabs -->
+          <div class="alert-filter-tabs">
+            <button
+              class="alert-filter-tab"
+              :class="{ active: alertFilter === 'all' }"
+              @click="alertFilter = 'all'"
+            >
+              全部 <span class="tab-count">{{ alertStats.total }}</span>
+            </button>
+            <button
+              class="alert-filter-tab"
+              :class="{ active: alertFilter === 'high' }"
+              @click="alertFilter = 'high'"
+            >
+              高风险 <span class="tab-count">{{ alertList.filter(a => a.level === 'high').length }}</span>
+            </button>
+            <button
+              class="alert-filter-tab"
+              :class="{ active: alertFilter === 'unhandled' }"
+              @click="alertFilter = 'unhandled'"
+            >
+              待处理 <span class="tab-count">{{ alertList.filter(a => !a.handled).length }}</span>
+            </button>
+          </div>
+
+          <!-- 预警列表 -->
+          <div class="alert-center-dialog-body">
+            <div
+              v-for="(item, idx) in filteredAlerts"
+              :key="item.id"
+              class="alert-detail-item"
+              :class="[item.level, { handled: item.handled }]"
+            >
+              <div class="alert-detail-head">
+                <div class="alert-detail-icon" :class="item.level">
+                  <AppIcon :name="alertTypeIcon(item.type)" :size="16" :color="'#fff'" />
+                </div>
+                <div class="alert-detail-title-wrap">
+                  <div class="alert-detail-title-row">
+                    <span class="alert-detail-title">{{ item.title }}</span>
+                    <span class="alert-detail-level" :class="item.level">{{ alertLevelText(item.level) }}</span>
+                    <span v-if="item.handled" class="alert-detail-handled"><AppIcon name="check-circle" :size="11" /> 已处理</span>
+                  </div>
+                  <div class="alert-detail-time"><AppIcon name="clock" :size="10" /> {{ item.time }}</div>
+                </div>
+              </div>
+              <div class="alert-detail-desc">{{ item.desc }}</div>
+              <div class="alert-detail-suggest">
+                <AppIcon name="lightbulb" :size="11" :color="'var(--color-brand)'" />
+                <span>{{ item.suggestion }}</span>
+              </div>
+              <div v-if="item.contacts.length" class="alert-detail-contacts">
+                <AppIcon name="phone" :size="10" :color="'var(--color-text-tertiary)'" />
+                <span>紧急联系人：{{ item.contacts.join('、') }}</span>
+                <span v-if="item.notified" class="alert-detail-notified"><AppIcon name="check-circle" :size="10" /> 已通知</span>
+              </div>
+              <div class="alert-detail-actions">
+                <button
+                  v-if="item.contacts.length"
+                  class="alert-detail-btn notify"
+                  @click="notifyContacts(idx)"
+                >
+                  <AppIcon name="phone" :size="12" /> 通知联系人
+                </button>
+                <button
+                  v-if="!item.handled"
+                  class="alert-detail-btn handle"
+                  @click="handleAlert(idx)"
+                >
+                  <AppIcon name="check" :size="12" /> 标记已处理
+                </button>
+              </div>
+            </div>
+
+            <div v-if="filteredAlerts.length === 0" class="alert-detail-empty">
+              <AppIcon name="check-circle" :size="36" :color="'var(--color-brand)'" />
+              <div class="alert-detail-empty-title">暂无相关预警</div>
+              <div class="alert-detail-empty-desc">妈妈状态良好，请放心</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- 护理模式：统计详情弹窗 -->
     <transition name="fade">
       <div v-if="showStatDetail" class="stat-detail-mask" @click="showStatDetail = false">
@@ -1193,15 +1547,162 @@ function openFeatureDialog(title: string, content: string, icon: string) {
             </div>
             <button class="life-svc-close" @click="showLifeService = false"><AppIcon name="x" :size="18" /></button>
           </div>
-          <div class="life-svc-list">
+          <div v-if="activeService.items.length" class="life-svc-list">
             <div v-for="(item, idx) in activeService.items" :key="idx" class="life-svc-item">
               <div class="life-svc-item-info">
                 <div class="life-svc-item-name">{{ item.name }}</div>
                 <div class="life-svc-item-desc">{{ item.desc }}</div>
               </div>
-              <button class="life-svc-item-btn" @click="bookService(item.name)">预约</button>
+              <div class="life-svc-item-right">
+                <span class="life-svc-item-price">¥{{ item.price }}</span>
+                <button class="life-svc-item-btn" @click="activeService.key === 'shop' ? buyProduct(item.name) : (activeService.key === 'meal' ? orderMeal(item.name) : bookService(item.name))">
+                  {{ activeService.key === 'shop' ? '购买' : (activeService.key === 'meal' ? '下单' : '预约') }}
+                </button>
+              </div>
             </div>
           </div>
+
+          <!-- 任务9：长者助餐增强（社区食堂/今日菜单/营养套餐/送餐） -->
+          <div v-if="activeService.key === 'meal'" class="meal-enhance">
+            <div class="meal-section-title">
+              <AppIcon name="utensils" :size="15" :color="'var(--color-brand)'" />
+              <span>对接社区老年食堂</span>
+            </div>
+            <div class="canteen-list">
+              <div v-for="c in elderlyMeals.communityCanteens" :key="c.id" class="canteen-card">
+                <div class="canteen-head">
+                  <span class="canteen-name">{{ c.name }}</span>
+                  <span class="canteen-rating"><AppIcon name="star" :size="11" :color="'#F6A35C'" /> {{ c.rating }}</span>
+                </div>
+                <div class="canteen-meta">
+                  <span><AppIcon name="map-pin" :size="11" /> {{ c.address }}</span>
+                  <span class="canteen-distance">{{ c.distance }}</span>
+                </div>
+                <div class="canteen-hours"><AppIcon name="clock" :size="11" /> {{ c.openHours }}</div>
+              </div>
+            </div>
+
+            <div class="meal-section-title">
+              <AppIcon name="carrot" :size="15" :color="'var(--color-brand)'" />
+              <span>今日菜单 · 营养搭配推荐</span>
+            </div>
+            <div class="menu-list">
+              <div v-for="(m, idx) in elderlyMeals.todayMenu" :key="idx" class="menu-item">
+                <div class="menu-info">
+                  <div class="menu-name">{{ m.name }}</div>
+                  <div class="menu-desc">{{ m.desc }} · {{ m.calories }} 千卡</div>
+                </div>
+                <div class="menu-tags">
+                  <span v-for="t in m.tags" :key="t" class="menu-tag" :class="'tag-' + t">{{ t }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="meal-section-title">
+              <AppIcon name="clipboard-list" :size="15" :color="'var(--color-brand)'" />
+              <span>特殊饮食套餐</span>
+            </div>
+            <div class="meal-plan-grid">
+              <div v-for="p in elderlyMeals.mealPlans" :key="p.id" class="meal-plan-card" @click="applyMealPlan(p.name)">
+                <div class="meal-plan-icon" :style="{ background: p.color }">
+                  <AppIcon :name="p.icon" :size="18" :color="'var(--color-brand-dark)'" />
+                </div>
+                <div class="meal-plan-info">
+                  <div class="meal-plan-name">{{ p.name }}</div>
+                  <div class="meal-plan-desc">{{ p.desc }}</div>
+                </div>
+                <AppIcon name="chevron-right" :size="14" :color="'var(--color-text-tertiary)'" />
+              </div>
+            </div>
+
+            <div class="meal-delivery-banner" v-if="elderlyMeals.delivery.available">
+              <div class="delivery-icon"><AppIcon name="package" :size="18" :color="'#fff'" /></div>
+              <div class="delivery-info">
+                <div class="delivery-title">送餐上门 · {{ elderlyMeals.delivery.estimatedTime }}</div>
+                <div class="delivery-desc">配送费 ¥{{ elderlyMeals.delivery.fee }} · 满 ¥{{ elderlyMeals.delivery.freeThreshold }} 免配送费 · {{ elderlyMeals.delivery.serviceArea }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 任务10：适老化改造 -->
+          <div v-if="activeService.key === 'retrofit'" class="retrofit-enhance">
+            <div class="retrofit-tabs">
+              <button class="retrofit-tab" :class="{ active: retrofitTab === 'schemes' }" @click="retrofitTab = 'schemes'">改造方案</button>
+              <button class="retrofit-tab" :class="{ active: retrofitTab === 'subsidies' }" @click="retrofitTab = 'subsidies'">补贴政策</button>
+              <button class="retrofit-tab" :class="{ active: retrofitTab === 'teams' }" @click="retrofitTab = 'teams'">施工团队</button>
+            </div>
+
+            <div v-if="retrofitTab === 'schemes'" class="retrofit-scheme-list">
+              <div v-for="s in elderlyRetrofit.schemes" :key="s.id" class="retrofit-scheme-card">
+                <div class="scheme-head">
+                  <span class="scheme-icon" :style="{ background: s.color }">
+                    <AppIcon :name="s.icon" :size="18" :color="'var(--color-brand-dark)'" />
+                  </span>
+                  <div class="scheme-title-row">
+                    <div class="scheme-name">{{ s.name }}</div>
+                    <div class="scheme-price">{{ s.price }}</div>
+                  </div>
+                  <span class="scheme-priority" :class="'pri-' + s.priority">{{ s.priority }}优先</span>
+                </div>
+                <div class="scheme-desc">{{ s.desc }}</div>
+                <div class="scheme-details">
+                  <span v-for="(d, idx) in s.details" :key="idx" class="scheme-detail-tag">{{ d }}</span>
+                </div>
+                <div class="scheme-subsidy"><AppIcon name="shield-check" :size="12" :color="'var(--color-brand)'" /> {{ s.subsidy }}</div>
+                <button class="scheme-consult-btn" @click="consultRetrofit(s.name)">预约咨询</button>
+              </div>
+            </div>
+
+            <div v-if="retrofitTab === 'subsidies'" class="retrofit-subsidy-list">
+              <div v-for="(sub, idx) in elderlyRetrofit.subsidies" :key="idx" class="subsidy-card">
+                <div class="subsidy-head">
+                  <div class="subsidy-name">{{ sub.name }}</div>
+                  <span class="subsidy-status">{{ sub.status }}</span>
+                </div>
+                <div class="subsidy-amount"><AppIcon name="gem" :size="13" :color="'#F6A35C'" /> {{ sub.amount }}</div>
+                <div class="subsidy-condition">申请条件：{{ sub.condition }}</div>
+                <button class="subsidy-apply-btn" @click="applySubsidy(sub.name)">查询资格</button>
+              </div>
+            </div>
+
+            <div v-if="retrofitTab === 'teams'" class="retrofit-team-list">
+              <div v-for="(t, idx) in elderlyRetrofit.teams" :key="idx" class="team-card">
+                <div class="team-head">
+                  <span class="team-avatar"><AppIcon name="hard-hat" :size="18" :color="'var(--color-brand-dark)'" /></span>
+                  <div class="team-info">
+                    <div class="team-name">{{ t.name }}</div>
+                    <div class="team-meta">
+                      <span><AppIcon name="star" :size="11" :color="'#F6A35C'" /> {{ t.rating }}</span>
+                      <span><AppIcon name="clipboard-list" :size="11" /> {{ t.cases }} 案例</span>
+                      <span><AppIcon name="map-pin" :size="11" /> {{ t.area }}</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="team-contact-btn" @click="contactTeam(t.name)">免费上门测量</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 康养商城：查看更多适老产品 -->
+          <div v-if="activeService.key === 'shop' && shopMoreItems.length" class="shop-more-wrap">
+            <div v-if="showShopMore" class="shop-more-list">
+              <div v-for="(item, idx) in shopMoreItems" :key="idx" class="life-svc-item shop-more-item">
+                <div class="life-svc-item-info">
+                  <div class="life-svc-item-name">{{ item.name }}</div>
+                  <div class="life-svc-item-desc">{{ item.desc }}</div>
+                </div>
+                <div class="life-svc-item-right">
+                  <span class="life-svc-item-price">¥{{ item.price }}</span>
+                  <button class="life-svc-item-btn" @click="buyProduct(item.name)">购买</button>
+                </div>
+              </div>
+            </div>
+            <button class="shop-more-btn" @click="toggleShopMore">
+              <span>{{ showShopMore ? '收起' : '查看更多适老产品' }}</span>
+              <AppIcon name="chevron-down" :size="16" :color="'var(--color-brand)'" :class="{ rotated: showShopMore }" />
+            </button>
+          </div>
+
           <div class="life-svc-tip">
             <AppIcon name="shield-check" :size="14" :color="'var(--color-brand)'" />
             <span>所有服务均经平台认证，小康全程跟踪订单</span>
@@ -1371,6 +1872,111 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   font-weight: 500;
 }
 .greeting-btn.companion:hover { background: rgba(255, 255, 255, 1); box-shadow: 0 4px 14px rgba(91, 184, 158, 0.15); }
+
+/* 预约活动滚动提醒（活力老人模式） */
+.appt-scroll-section {
+  margin: 0 var(--space-4) var(--space-4);
+}
+.appt-scroll-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-1);
+}
+.appt-scroll-title {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+}
+.appt-scroll-dots {
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.appt-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.35);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.appt-dot.active {
+  width: 16px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--color-brand), var(--color-brand-dark));
+}
+.appt-scroll-card {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(45, 52, 54, 0.06);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.appt-scroll-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(45, 52, 54, 0.1);
+  border-color: rgba(91, 184, 158, 0.25);
+}
+.appt-scroll-card:active { transform: scale(0.98); }
+.appt-scroll-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.2);
+}
+.appt-scroll-body {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.appt-scroll-row1 {
+  display: flex; align-items: baseline; gap: var(--space-2);
+}
+.appt-scroll-name {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+.appt-scroll-time {
+  font-size: 0.6875rem;
+  color: var(--color-brand-dark);
+  font-weight: 600;
+  background: rgba(91, 184, 158, 0.1);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+}
+.appt-scroll-row2 {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+}
+.appt-scroll-loc {
+  display: inline-flex; align-items: center; gap: 2px;
+  flex-shrink: 0;
+}
+.appt-scroll-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1; min-width: 0;
+}
+/* 轮播过渡动画 */
+.appt-fade-enter-active, .appt-fade-leave-active {
+  transition: all 0.4s ease;
+}
+.appt-fade-enter-from {
+  opacity: 0;
+  transform: translateX(12px);
+}
+.appt-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-12px);
+}
 
 /* 联系家人 */
 .family-scroll { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-2); scroll-snap-type: x mandatory; }
@@ -1557,6 +2163,66 @@ function openFeatureDialog(title: string, content: string, icon: string) {
 }
 .life-svc-item-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(91,184,158,0.3); }
 .life-svc-item-btn:active { transform: scale(0.95); }
+.life-svc-item-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.life-svc-item-price {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #E74C3C;
+}
+
+/* 康养商城：查看更多适老产品 */
+.shop-more-wrap {
+  margin-bottom: var(--space-3);
+}
+.shop-more-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px dashed rgba(91, 184, 158, 0.2);
+}
+.shop-more-item {
+  padding: var(--space-2) var(--space-4);
+  background: rgba(91, 184, 158, 0.04);
+}
+.shop-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid rgba(91, 184, 158, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(91, 184, 158, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shop-more-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(91, 184, 158, 0.12);
+  border-color: rgba(91, 184, 158, 0.35);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.15);
+}
+.shop-more-btn .app-icon {
+  transition: transform 0.3s ease;
+}
+.shop-more-btn .app-icon.rotated {
+  transform: rotate(180deg);
+}
 .life-svc-tip {
   display: flex;
   align-items: center;
@@ -1566,6 +2232,457 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   padding: var(--space-2) var(--space-3);
   background: rgba(91, 184, 158, 0.06);
   border-radius: var(--radius-sm);
+}
+
+/* ===== 任务9：长者助餐增强 ===== */
+.meal-enhance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.meal-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin-top: var(--space-1);
+}
+.canteen-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.canteen-card {
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(91, 184, 158, 0.12);
+  transition: all var(--transition-fast);
+}
+.canteen-card:hover {
+  border-color: rgba(91, 184, 158, 0.3);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.1);
+  transform: translateY(-1px);
+}
+.canteen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.canteen-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.canteen-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-xs);
+  color: #F6A35C;
+  font-weight: var(--weight-semibold);
+}
+.canteen-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+.canteen-meta span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.canteen-distance {
+  color: var(--color-brand);
+  font-weight: var(--weight-medium);
+}
+.canteen-hours {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.menu-info { flex: 1; }
+.menu-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+}
+.menu-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+.menu-tags {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.menu-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: var(--weight-medium);
+}
+.menu-tag.tag-低盐 {
+  background: rgba(91, 184, 158, 0.15);
+  color: var(--color-brand-dark);
+}
+.menu-tag.tag-低糖 {
+  background: rgba(232, 184, 124, 0.18);
+  color: #B8860B;
+}
+.menu-tag.tag-软食 {
+  background: rgba(111, 177, 217, 0.15);
+  color: #2E5A88;
+}
+.meal-plan-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.meal-plan-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.meal-plan-card:hover {
+  background: rgba(91, 184, 158, 0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.1);
+}
+.meal-plan-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.meal-plan-info { flex: 1; }
+.meal-plan-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.meal-plan-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+.meal-delivery-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--color-brand-lighter), var(--color-brand));
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.2);
+}
+.delivery-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.delivery-info { flex: 1; }
+.delivery-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-brand-dark);
+}
+.delivery-desc {
+  font-size: var(--text-xs);
+  color: var(--color-brand-dark);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* ===== 任务10：适老化改造 ===== */
+.retrofit-enhance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.retrofit-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-1);
+  padding: 4px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+}
+.retrofit-tab {
+  padding: var(--space-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.retrofit-tab.active {
+  background: var(--color-surface-solid);
+  color: var(--color-brand-dark);
+  font-weight: var(--weight-semibold);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+.retrofit-scheme-list,
+.retrofit-subsidy-list,
+.retrofit-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.retrofit-scheme-card {
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-fast);
+}
+.retrofit-scheme-card:hover {
+  border-color: rgba(91, 184, 158, 0.3);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.1);
+  transform: translateY(-1px);
+}
+.scheme-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 6px;
+}
+.scheme-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.scheme-title-row {
+  flex: 1;
+}
+.scheme-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.scheme-price {
+  font-size: var(--text-xs);
+  color: var(--color-brand);
+  font-weight: var(--weight-medium);
+  margin-top: 2px;
+}
+.scheme-priority {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: var(--weight-semibold);
+  flex-shrink: 0;
+}
+.scheme-priority.pri-高 {
+  background: rgba(231, 76, 60, 0.12);
+  color: #C0392B;
+}
+.scheme-priority.pri-中 {
+  background: rgba(243, 156, 18, 0.15);
+  color: #B8860B;
+}
+.scheme-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+.scheme-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.scheme-detail-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(91, 184, 158, 0.08);
+  color: var(--color-brand-dark);
+  border-radius: 4px;
+}
+.scheme-subsidy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--color-brand);
+  font-weight: var(--weight-medium);
+  margin-bottom: 8px;
+}
+.scheme-consult-btn {
+  width: 100%;
+  padding: var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-brand-lighter), var(--color-brand));
+  color: var(--color-brand-dark);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.scheme-consult-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.3);
+}
+.scheme-consult-btn:active {
+  transform: scale(0.98);
+}
+.subsidy-card {
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+.subsidy-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.subsidy-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.subsidy-status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(91, 184, 158, 0.12);
+  color: var(--color-brand-dark);
+  font-weight: var(--weight-medium);
+}
+.subsidy-amount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: #F6A35C;
+  font-weight: var(--weight-bold);
+  margin-bottom: 4px;
+}
+.subsidy-condition {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
+}
+.subsidy-apply-btn {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid rgba(91, 184, 158, 0.3);
+  border-radius: var(--radius-sm);
+  background: rgba(91, 184, 158, 0.06);
+  color: var(--color-brand-dark);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.subsidy-apply-btn:hover {
+  background: rgba(91, 184, 158, 0.12);
+  transform: translateY(-1px);
+}
+.team-card {
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+.team-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 8px;
+}
+.team-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: rgba(91, 184, 158, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.team-info { flex: 1; }
+.team-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+.team-meta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+.team-meta span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.team-contact-btn {
+  width: 100%;
+  padding: var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-brand-lighter), var(--color-brand));
+  color: var(--color-brand-dark);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.team-contact-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.3);
+}
+.team-contact-btn:active {
+  transform: scale(0.98);
 }
 
 /* 统一提示弹窗（替代原生 alert） */
@@ -2204,22 +3321,84 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   opacity: 0.85;
 }
 
-/* SOS 卡片 */
-.voice-sos-card {
+/* 语音提示卡片：指导用户通过对话操作 */
+.voice-tip-card {
   margin-bottom: var(--space-5);
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-4) var(--space-4);
   border-radius: 20px;
-  background: rgba(212,107,107,0.08);
-  border: 2px solid rgba(212,107,107,0.15);
-  text-align: center;
+  background: #fff;
+  border: 2px solid rgba(91,184,158,0.25);
+  box-shadow: 0 4px 16px rgba(91,184,158,0.08);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.voice-tip-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(246,163,92,0.15);
+}
+.voice-tip-content {
+  flex: 1;
+  min-width: 0;
+}
+.voice-tip-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+.voice-tip-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
+  gap: 6px;
 }
-.voice-sos-hint {
+.voice-tip-list span {
   font-size: 0.95rem;
   color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* 震动确认小字提示 toast */
+.voice-hint-toast {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 24px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(91,184,158,0.3);
+  box-shadow: 0 6px 24px rgba(45,52,54,0.15);
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  z-index: 1500;
+  max-width: 90%;
+}
+.voice-hint-toast span {
+  font-weight: 600;
+}
+
+/* 震动提示过渡动画 */
+.voice-hint-fade-enter-active,
+.voice-hint-fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.voice-hint-fade-enter-from,
+.voice-hint-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
 }
 
 /* 健康提醒卡片 */
@@ -3304,5 +4483,472 @@ function openFeatureDialog(title: string, content: string, icon: string) {
     0 3px 12px rgba(76,175,138,0.3),
     inset 0 1px 0 rgba(255,255,255,0.2);
   transform: translateY(-2px);
+}
+
+/* ===== 子女模式：预警中心概览（任务2） ===== */
+.alert-center-section {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.04), rgba(231, 76, 60, 0.01));
+  border: 1px solid rgba(231, 76, 60, 0.15);
+  border-radius: 12px;
+  padding: var(--space-3) !important;
+  margin-bottom: var(--space-4);
+}
+.alert-center-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.alert-center-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.alert-center-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+.alert-center-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.alert-center-badge.high {
+  color: #fff;
+  background: #E74C3C;
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+}
+.alert-center-badge.mid {
+  color: #fff;
+  background: #F39C12;
+}
+.alert-center-badge.normal {
+  color: var(--color-brand-dark);
+  background: rgba(91, 184, 158, 0.15);
+}
+.alert-center-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.2s ease;
+}
+.alert-center-more:hover { color: var(--color-brand-dark); }
+
+.alert-center-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.alert-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #E0E3EB;
+}
+.alert-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.alert-stat-num.high { color: #E74C3C; }
+.alert-stat-num.mid { color: #F39C12; }
+.alert-stat-num.handled { color: var(--color-brand); }
+.alert-stat-num.total { color: #6C7293; }
+.alert-stat-label {
+  font-size: 0.65rem;
+  color: #6C7293;
+}
+
+.alert-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.alert-preview-item {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: #fff;
+  border-radius: 10px;
+  border-left: 3px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.alert-preview-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.alert-preview-item.high { border-left-color: #E74C3C; }
+.alert-preview-item.mid { border-left-color: #F39C12; }
+.alert-preview-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.alert-preview-icon.high { background: #E74C3C; }
+.alert-preview-icon.mid { background: #F39C12; }
+.alert-preview-body {
+  flex: 1;
+  min-width: 0;
+}
+.alert-preview-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+.alert-preview-title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+.alert-preview-level {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  color: #fff;
+}
+.alert-preview-level.high { background: #E74C3C; }
+.alert-preview-level.mid { background: #F39C12; }
+.alert-preview-desc {
+  font-size: 0.72rem;
+  color: #6C7293;
+  line-height: 1.5;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.alert-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.65rem;
+  color: #6C7293;
+}
+.alert-preview-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.alert-preview-notified {
+  color: var(--color-brand);
+}
+.alert-preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--color-brand-dark);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* ===== 预警中心完整弹窗 ===== */
+.alert-center-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.alert-center-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 85vh;
+  background: #F5F6FA;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.alert-center-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  border-bottom: 1px solid #E0E3EB;
+}
+.alert-center-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+.alert-center-dialog-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.alert-center-dialog-close:hover { background: rgba(0, 0, 0, 0.06); }
+
+.alert-filter-tabs {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: #fff;
+  border-bottom: 1px solid #E0E3EB;
+}
+.alert-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #E0E3EB;
+  border-radius: 16px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6C7293;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.alert-filter-tab .tab-count {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba(108, 114, 147, 0.12);
+  color: #6C7293;
+}
+.alert-filter-tab:hover {
+  border-color: rgba(91, 184, 158, 0.4);
+  color: var(--color-brand-dark);
+}
+.alert-filter-tab.active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(91, 184, 158, 0.3);
+}
+.alert-filter-tab.active .tab-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.alert-center-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.alert-center-dialog-body::-webkit-scrollbar {
+  width: 4px;
+}
+.alert-center-dialog-body::-webkit-scrollbar-thumb {
+  background: rgba(91, 184, 158, 0.35);
+  border-radius: 2px;
+}
+
+.alert-detail-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: var(--space-3);
+  border-left: 4px solid;
+  transition: all 0.2s ease;
+}
+.alert-detail-item.high { border-left-color: #E74C3C; }
+.alert-detail-item.mid { border-left-color: #F39C12; }
+.alert-detail-item.low { border-left-color: var(--color-brand); }
+.alert-detail-item.handled {
+  opacity: 0.7;
+  border-left-style: dashed;
+}
+.alert-detail-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.alert-detail-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.alert-detail-icon.high { background: #E74C3C; }
+.alert-detail-icon.mid { background: #F39C12; }
+.alert-detail-icon.low { background: var(--color-brand); }
+.alert-detail-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.alert-detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.alert-detail-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+.alert-detail-level {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 8px;
+  color: #fff;
+}
+.alert-detail-level.high { background: #E74C3C; }
+.alert-detail-level.mid { background: #F39C12; }
+.alert-detail-level.low { background: var(--color-brand); }
+.alert-detail-handled {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  background: rgba(91, 184, 158, 0.12);
+  padding: 1px 7px;
+  border-radius: 8px;
+}
+.alert-detail-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: #6C7293;
+}
+.alert-detail-desc {
+  font-size: 0.78rem;
+  color: #1A1A2E;
+  line-height: 1.6;
+  margin-bottom: var(--space-2);
+}
+.alert-detail-suggest {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: var(--space-2);
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: var(--color-brand-dark);
+  line-height: 1.5;
+  margin-bottom: var(--space-2);
+}
+.alert-detail-contacts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: #6C7293;
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+.alert-detail-notified {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-brand);
+  font-weight: 600;
+}
+.alert-detail-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.alert-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.alert-detail-btn.notify {
+  background: rgba(91, 184, 158, 0.12);
+  color: var(--color-brand-dark);
+}
+.alert-detail-btn.notify:hover {
+  background: rgba(91, 184, 158, 0.22);
+  transform: translateY(-1px);
+}
+.alert-detail-btn.handle {
+  background: var(--color-brand);
+  color: #fff;
+}
+.alert-detail-btn.handle:hover {
+  background: var(--color-brand-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.3);
+}
+
+.alert-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+.alert-detail-empty-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1A1A2E;
+}
+.alert-detail-empty-desc {
+  font-size: 0.75rem;
+  color: #6C7293;
 }
 </style>
