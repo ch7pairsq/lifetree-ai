@@ -7,6 +7,7 @@ import VoiceNav from '@/components/VoiceNav.vue'
 import SideTools from '@/components/SideTools.vue'
 import MinimalNav from '@/components/MinimalNav.vue'
 import CaregiverNav from '@/components/CaregiverNav.vue'
+import WheelchairNav from '@/components/WheelchairNav.vue'
 import FloatingCompanion from '@/components/FloatingCompanion.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -36,6 +37,8 @@ const navComp = computed(() => {
       return MinimalNav
     case 'caregiver-tabs':
       return CaregiverNav
+    case 'wheelchair-nav':
+      return WheelchairNav
     default:
       return TabBar
   }

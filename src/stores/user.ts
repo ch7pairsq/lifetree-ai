@@ -9,13 +9,13 @@ export interface UIModeConfig {
   desc: string
   icon: string
   // 布局骨架类型：决定导航/字号/间距
-  layout: 'standard' | 'elderly' | 'voice' | 'tool' | 'minimal' | 'caregiver'
+  layout: 'standard' | 'elderly' | 'voice' | 'tool' | 'minimal' | 'caregiver' | 'wheelchair'
   // 字号缩放
   fontScale: number
   // 触控目标最小尺寸
   touchTarget: number
   // 导航栏样式
-  navStyle: 'bottom-tabs' | 'voice-bar' | 'side-tools' | 'minimal-nav' | 'caregiver-tabs'
+  navStyle: 'bottom-tabs' | 'voice-bar' | 'side-tools' | 'minimal-nav' | 'caregiver-tabs' | 'wheelchair-nav'
   // 是否显示毛玻璃效果（低性能/高对比度时关闭）
   glassEffect: boolean
   // 是否高对比度
@@ -81,6 +81,19 @@ export const UI_MODES: UIModeConfig[] = [
     density: 'normal',
   },
   {
+    key: 'wheelchair',
+    label: '轮椅模式',
+    desc: '语音操作，无障碍出行',
+    icon: 'accessibility',
+    layout: 'wheelchair',
+    fontScale: 1.15,
+    touchTarget: 56,
+    navStyle: 'wheelchair-nav',
+    glassEffect: true,
+    highContrast: false,
+    density: 'normal',
+  },
+  {
     key: 'minimal',
     label: '护理模式',
     desc: '护理工作台，任务管理',
@@ -128,6 +141,7 @@ export const useUserStore = defineStore('user', () => {
   const isElderly = computed(() => activeModeKey.value === 'elderly')
   const isVoice = computed(() => activeModeKey.value === 'voice')
   const isTool = computed(() => activeModeKey.value === 'tool')
+  const isWheelchair = computed(() => activeModeKey.value === 'wheelchair')
   const isMinimal = computed(() => activeModeKey.value === 'minimal')
   const isCaregiver = computed(() => activeModeKey.value === 'caregiver')
 
@@ -156,6 +170,7 @@ export const useUserStore = defineStore('user', () => {
     isElderly,
     isVoice,
     isTool,
+    isWheelchair,
     isMinimal,
     isCaregiver,
     selectMood,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile, voiceAudiobooks, voiceNews, scrollAppointments, alertCenter, elderlyMeals, elderlyRetrofit } from '@/mock'
+import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile, voiceAudiobooks, voiceNews, scrollAppointments, alertCenter, elderlyMeals, elderlyRetrofit, wheelchairHomeServices, wheelchairQuickShop, wheelchairAccessibleNav, wheelchairRehabGuide } from '@/mock'
 import { useUserStore } from '@/stores/user'
 import AppIcon from '@/components/AppIcon.vue'
 import BookingFlow from '@/components/BookingFlow.vue'
@@ -103,6 +103,15 @@ function contactTeam(name: string) {
 
 function goRoute(path: string) {
   router.push(path)
+}
+
+// 轮椅模式渐变色映射
+const wcGradMap: Record<string, string> = {
+  teal: 'linear-gradient(135deg, var(--color-brand-lighter), var(--color-brand))',
+  blue: 'linear-gradient(135deg, var(--color-accent2-light), var(--color-accent2-dark))',
+  gold: 'linear-gradient(135deg, var(--color-accent3-light), var(--color-accent3-dark))',
+  green: 'linear-gradient(135deg, #c8f0e0, #5BB89E)',
+  red: 'linear-gradient(135deg, #FFD3D3, #D46B6B)',
 }
 
 // 活力老人模式：预约活动滚动提醒（自动轮播）
@@ -1081,6 +1090,221 @@ function openFeatureDialog(title: string, content: string, icon: string) {
             <AppIcon name="heart-pulse" :size="24" :color="'var(--color-brand)'" />
             <span>健康监测</span>
             <AppIcon name="chevron-right" :size="18" />
+          </button>
+        </div>
+      </section>
+    </template>
+
+    <!-- ==================== 轮椅模式 ==================== -->
+    <template v-else-if="userStore.isWheelchair">
+      <section class="wc-greeting">
+        <h1 class="wc-hello">{{ greeting.title }}</h1>
+        <p class="wc-sub">{{ greeting.weatherText }} {{ greeting.temp }} · 空气{{ greeting.airQuality }}</p>
+      </section>
+
+      <!-- 语音操作 + 紧急求助 -->
+      <section class="wc-action-row">
+        <button class="wc-action-btn voice" @click="goRoute('/companion')">
+          <AppIcon name="mic" :size="28" :color="'#fff'" />
+          <span class="wc-action-text">语音操作</span>
+        </button>
+        <button class="wc-action-btn danger" @click="showAlert('正在呼叫紧急联系人...')">
+          <AppIcon name="siren" :size="28" :color="'#fff'" />
+          <span class="wc-action-text">紧急求助</span>
+        </button>
+      </section>
+
+      <!-- 今日健康小贴士 -->
+      <section class="wc-tip">
+        <div class="wc-section-title">今日健康贴士</div>
+        <div class="wc-tip-card">
+          <div class="wc-tip-icon">
+            <AppIcon name="lightbulb" :size="24" :color="'var(--color-accent3)'" />
+          </div>
+          <div class="wc-tip-content">
+            <p class="wc-tip-text">坐轮椅注意事项：</p>
+            <p class="wc-tip-item">① 每2小时调整坐姿，预防压疮</p>
+            <p class="wc-tip-item">② 每日上肢活动15分钟，保持肌力</p>
+            <p class="wc-tip-item">③ 注意坐垫透气，保持皮肤干燥</p>
+            <p class="wc-tip-item">④ 定期检查轮椅刹车与轮胎</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 今日用药提醒 -->
+      <section class="wc-med">
+        <div class="wc-section-title">今日用药提醒</div>
+        <div class="wc-med-list">
+          <div class="wc-med-card">
+            <AppIcon name="pill" :size="22" :color="'var(--color-brand)'" />
+            <div class="wc-med-info">
+              <div class="wc-med-name">降压药 苯磺酸氨氯地平 1片</div>
+              <div class="wc-med-time">07:30 已服 · 饭后服用</div>
+            </div>
+            <button class="wc-med-btn done">已服</button>
+          </div>
+          <div class="wc-med-card">
+            <AppIcon name="pill" :size="22" :color="'var(--color-accent3)'" />
+            <div class="wc-med-info">
+              <div class="wc-med-name">钙片 2片</div>
+              <div class="wc-med-time">12:30 待服 · 饭后服用</div>
+            </div>
+            <button class="wc-med-btn">未服</button>
+          </div>
+          <div class="wc-med-card">
+            <AppIcon name="pill" :size="22" :color="'var(--color-accent3)'" />
+            <div class="wc-med-info">
+              <div class="wc-med-name">降糖药 二甲双胍 1片</div>
+              <div class="wc-med-time">18:00 待服 · 饭中服用</div>
+            </div>
+            <button class="wc-med-btn">未服</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 上门服务预约 -->
+      <section class="wc-services">
+        <div class="wc-section-title">上门服务预约</div>
+        <div class="wc-service-grid">
+          <button
+            v-for="s in wheelchairHomeServices"
+            :key="s.id"
+            class="wc-service-card"
+            @click="showAlert(`已预约：${s.name}，${s.time}上门服务`)"
+          >
+            <div class="wc-service-icon" :style="{ background: wcGradMap[s.color] }">
+              <AppIcon :name="s.icon" :size="22" :color="'#fff'" />
+            </div>
+            <div class="wc-service-body">
+              <div class="wc-service-name">
+                {{ s.name }}
+                <span v-if="s.tag" class="wc-service-tag" :class="s.color">{{ s.tag }}</span>
+              </div>
+              <div class="wc-service-desc">{{ s.desc }}</div>
+              <div class="wc-service-meta">
+                <span class="wc-service-price">{{ s.price }}</span>
+                <span class="wc-service-time">{{ s.time }}</span>
+              </div>
+            </div>
+            <AppIcon name="chevron-right" :size="16" :color="'var(--color-text-tertiary)'" />
+          </button>
+        </div>
+      </section>
+
+      <!-- 一键购物 -->
+      <section class="wc-shop">
+        <div class="wc-section-title">一键购物</div>
+        <div class="wc-shop-grid">
+          <button
+            v-for="item in wheelchairQuickShop"
+            :key="item.id"
+            class="wc-shop-card"
+            @click="showAlert(`已加入购物车：${item.name}`)"
+          >
+            <div class="wc-shop-icon" :style="{ background: wcGradMap[item.color] }">
+              <AppIcon :name="item.icon" :size="22" :color="'#fff'" />
+            </div>
+            <div class="wc-shop-name">{{ item.name }}</div>
+            <div class="wc-shop-desc">{{ item.desc }}</div>
+            <div class="wc-shop-price">{{ item.price }}</div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 无障碍导航 -->
+      <section class="wc-nav-section">
+        <div class="wc-section-title">无障碍导航</div>
+        <!-- 推荐路线 -->
+        <div class="wc-route-list">
+          <div
+            v-for="(route, idx) in wheelchairAccessibleNav.accessibleRoutes"
+            :key="idx"
+            class="wc-route-card"
+            @click="showAlert(`开始导航：${route.name}`)"
+          >
+            <div class="wc-route-icon">
+              <AppIcon name="navigation" :size="20" :color="'#fff'" />
+            </div>
+            <div class="wc-route-body">
+              <div class="wc-route-name">{{ route.name }}</div>
+              <div class="wc-route-from">{{ route.from }} → {{ route.to }}</div>
+              <div class="wc-route-meta">
+                <span>{{ route.distance }}</span>
+                <span>{{ route.eta }}</span>
+                <span>{{ route.type }}</span>
+                <span class="wc-route-clear">无障碍</span>
+              </div>
+            </div>
+            <AppIcon name="chevron-right" :size="16" :color="'var(--color-text-tertiary)'" />
+          </div>
+        </div>
+        <!-- 附近无障碍设施 -->
+        <div class="wc-facility-title">附近无障碍设施</div>
+        <div class="wc-facility-list">
+          <div
+            v-for="f in wheelchairAccessibleNav.nearbyFacilities"
+            :key="f.id"
+            class="wc-facility-card"
+            @click="showAlert(`导航至：${f.name}`)"
+          >
+            <div class="wc-facility-icon">
+              <AppIcon :name="f.icon" :size="18" :color="'var(--color-brand)'" />
+            </div>
+            <div class="wc-facility-body">
+              <div class="wc-facility-name">{{ f.name }}</div>
+              <div class="wc-facility-meta">
+                <span>{{ f.distance }}</span>
+                <span>{{ f.route }}</span>
+                <span>{{ f.eta }}</span>
+              </div>
+            </div>
+            <span class="wc-accessible-badge">无障碍</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 康复训练指导 -->
+      <section class="wc-rehab">
+        <div class="wc-section-title">康复训练指导</div>
+        <div class="wc-rehab-list">
+          <button
+            v-for="r in wheelchairRehabGuide"
+            :key="r.id"
+            class="wc-rehab-card"
+            @click="showAlert(`开始训练：${r.name}`)"
+          >
+            <div class="wc-rehab-icon" :style="{ background: wcGradMap[r.color] }">
+              <AppIcon :name="r.icon" :size="22" :color="'#fff'" />
+            </div>
+            <div class="wc-rehab-body">
+              <div class="wc-rehab-name">
+                {{ r.name }}
+                <span class="wc-rehab-level" :class="r.color">{{ r.level }}</span>
+              </div>
+              <div class="wc-rehab-desc">{{ r.desc }}</div>
+              <div class="wc-rehab-steps">
+                <AppIcon name="list" :size="10" />
+                <span>{{ r.steps.length }} 步 · {{ r.duration }}</span>
+              </div>
+            </div>
+            <AppIcon name="play" :size="16" :color="'var(--color-brand)'" />
+          </button>
+        </div>
+      </section>
+
+      <!-- 快捷服务 -->
+      <section class="wc-quick">
+        <div class="wc-section-title">快捷服务</div>
+        <div class="wc-quick-list">
+          <button class="wc-quick-item" @click="goRoute('/companion')">
+            <AppIcon name="bot" :size="22" :color="'var(--color-brand)'" />
+            <span>小康语音助手</span>
+            <AppIcon name="chevron-right" :size="16" />
+          </button>
+          <button class="wc-quick-item" @click="goRoute('/health')">
+            <AppIcon name="heart-pulse" :size="22" :color="'var(--color-brand)'" />
+            <span>健康监测</span>
+            <AppIcon name="chevron-right" :size="16" />
           </button>
         </div>
       </section>
@@ -3626,6 +3850,98 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   line-height: 1.8;
   margin: 0;
 }
+
+/* ============ 轮椅模式 ============ */
+.home-wheelchair { padding: 0 var(--space-4); }
+.wc-greeting { margin: var(--space-4) 0; }
+.wc-hello { font-size: 1.4rem; font-weight: 700; color: var(--color-text-primary); }
+.wc-sub { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: var(--space-1); }
+.wc-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
+.wc-action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-4); min-height: 90px; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.wc-action-btn:active { transform: scale(0.96); }
+.wc-action-btn.voice { background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); color: #fff; box-shadow: 0 4px 16px rgba(91,184,158,0.3); }
+.wc-action-btn.danger { background: linear-gradient(135deg, var(--state-error), #B85555); color: #fff; box-shadow: 0 4px 16px rgba(212,107,107,0.3); }
+.wc-action-text { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; }
+.wc-section-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-3); }
+.wc-tip { margin-bottom: var(--space-6); }
+.wc-tip-card { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(246,163,92,0.08), rgba(232,184,124,0.05)); border: 1px solid rgba(246,163,92,0.2); }
+.wc-tip-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(246,163,92,0.12); }
+.wc-tip-content { flex: 1; }
+.wc-tip-text { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); margin-bottom: var(--space-1); }
+.wc-tip-item { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.8; margin: 0; }
+.wc-med { margin-bottom: var(--space-6); }
+.wc-med-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.wc-med-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); }
+.wc-med-info { flex: 1; }
+.wc-med-name { font-size: var(--text-base); font-weight: 600; color: var(--color-text-primary); }
+.wc-med-time { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: 2px; }
+.wc-med-btn { padding: var(--space-2) var(--space-4); border: none; border-radius: var(--radius-full); background: var(--color-accent3); color: #fff; font-size: var(--text-sm); font-weight: 600; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,184,124,0.3); }
+.wc-med-btn:active { transform: scale(0.94); }
+.wc-med-btn.done { background: var(--color-brand); }
+.wc-services { margin-bottom: var(--space-6); }
+.wc-service-grid { display: flex; flex-direction: column; gap: var(--space-2); }
+.wc-service-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: none; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); cursor: pointer; transition: all 0.25s; }
+.wc-service-card:active { transform: scale(0.98); }
+.wc-service-icon { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.wc-service-body { flex: 1; min-width: 0; }
+.wc-service-name { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; }
+.wc-service-tag { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.wc-service-tag.teal { background: rgba(91,184,158,0.15); color: var(--color-brand-dark); }
+.wc-service-tag.green { background: rgba(91,184,158,0.15); color: var(--color-brand-dark); }
+.wc-service-tag.gold { background: rgba(246,163,92,0.15); color: var(--color-accent3); }
+.wc-service-tag.blue { background: rgba(111,177,217,0.15); color: var(--color-accent2); }
+.wc-service-desc { font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: 2px; }
+.wc-service-meta { display: flex; gap: var(--space-2); margin-top: 4px; }
+.wc-service-price { font-size: var(--text-xs); font-weight: 600; color: var(--color-brand-dark); }
+.wc-service-time { font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.wc-shop { margin-bottom: var(--space-6); }
+.wc-shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.wc-shop-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: var(--space-3); border: none; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); cursor: pointer; transition: all 0.25s; }
+.wc-shop-card:active { transform: scale(0.96); }
+.wc-shop-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.wc-shop-name { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); }
+.wc-shop-desc { font-size: var(--text-xs); color: var(--color-text-secondary); text-align: center; }
+.wc-shop-price { font-size: var(--text-xs); font-weight: 600; color: var(--color-brand-dark); }
+.wc-nav-section { margin-bottom: var(--space-6); }
+.wc-route-list { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.wc-route-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: 12px; background: linear-gradient(135deg, rgba(91,184,158,0.06), rgba(111,177,217,0.04)); border: 1px solid rgba(91,184,158,0.15); cursor: pointer; transition: all 0.25s; }
+.wc-route-card:active { transform: scale(0.98); }
+.wc-route-icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(91,184,158,0.3); }
+.wc-route-body { flex: 1; min-width: 0; }
+.wc-route-name { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); }
+.wc-route-from { font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: 2px; }
+.wc-route-meta { display: flex; gap: var(--space-2); margin-top: 4px; flex-wrap: wrap; }
+.wc-route-meta span { font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.wc-route-clear { color: var(--color-brand) !important; font-weight: 600; }
+.wc-facility-title { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); margin-bottom: var(--space-2); }
+.wc-facility-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.wc-facility-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); cursor: pointer; transition: all 0.25s; }
+.wc-facility-card:active { transform: scale(0.98); }
+.wc-facility-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(91,184,158,0.1); }
+.wc-facility-body { flex: 1; min-width: 0; }
+.wc-facility-name { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); }
+.wc-facility-meta { display: flex; gap: var(--space-2); margin-top: 2px; }
+.wc-facility-meta span { font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.wc-accessible-badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: rgba(91,184,158,0.12); color: var(--color-brand-dark); font-weight: 600; flex-shrink: 0; }
+.wc-rehab { margin-bottom: var(--space-6); }
+.wc-rehab-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.wc-rehab-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: none; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); cursor: pointer; transition: all 0.25s; }
+.wc-rehab-card:active { transform: scale(0.98); }
+.wc-rehab-icon { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.wc-rehab-body { flex: 1; min-width: 0; }
+.wc-rehab-name { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; }
+.wc-rehab-level { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.wc-rehab-level.teal { background: rgba(91,184,158,0.15); color: var(--color-brand-dark); }
+.wc-rehab-level.blue { background: rgba(111,177,217,0.15); color: var(--color-accent2); }
+.wc-rehab-level.green { background: rgba(91,184,158,0.15); color: var(--color-brand-dark); }
+.wc-rehab-level.gold { background: rgba(246,163,92,0.15); color: var(--color-accent3); }
+.wc-rehab-desc { font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: 2px; }
+.wc-rehab-steps { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.wc-quick { margin-bottom: var(--space-6); }
+.wc-quick-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.wc-quick-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: none; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); cursor: pointer; font-size: var(--text-base); color: var(--color-text-primary); transition: all 0.25s; }
+.wc-quick-item:active { transform: scale(0.98); }
+.wc-quick-item span { flex: 1; text-align: left; }
 
 /* ============ 护理模式（原极简行动） ============ */
 .home-minimal { padding: 0 var(--space-4); background: linear-gradient(135deg, rgba(91,184,158,0.06) 0%, rgba(111,177,217,0.04) 100%); min-height: 100vh; }

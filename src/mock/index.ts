@@ -1025,3 +1025,48 @@ export const companionSuggestions = [
   },
 ]
 
+// ===== 轮椅模式：上门服务 =====
+export const wheelchairHomeServices = [
+  { id: 1, icon: 'stethoscope', name: '上门康复理疗', desc: '专业康复师上门指导', price: '¥120/次', time: '约60分钟', tag: '热门', color: 'teal' },
+  { id: 2, icon: 'pill', name: '上门送药', desc: '处方药送药上门', price: '¥0服务费', time: '当日送达', tag: '免费', color: 'green' },
+  { id: 3, icon: 'utensils', name: '助餐送餐', desc: '软食/低糖/低盐定制', price: '¥15/餐', time: '每日送达', tag: '', color: 'gold' },
+  { id: 4, icon: 'wrench', name: '轮椅维修保养', desc: '上门检修/轮胎/刹车', price: '¥50起', time: '预约后24h', tag: '', color: 'blue' },
+  { id: 5, icon: 'heart-handshake', name: '陪诊就医', desc: '专人陪同看病取药', price: '¥200/次', time: '约半天', tag: '', color: 'teal' },
+  { id: 6, icon: 'scissors', name: '上门理发', desc: '行动不便老人专享', price: '¥30/次', time: '约30分钟', tag: '', color: 'gold' },
+]
+
+// ===== 轮椅模式：一键购物 =====
+export const wheelchairQuickShop = [
+  { id: 1, icon: 'shopping-cart', name: '日用品直送', desc: '纸巾/洗护/清洁', price: '满39免运费', color: 'teal' },
+  { id: 2, icon: 'carrot', name: '新鲜蔬菜', desc: '当日采摘次日达', price: '满29免运费', color: 'green' },
+  { id: 3, icon: 'pill', name: '常备药品', desc: '慢病用药一站式', price: '医保支付', color: 'gold' },
+  { id: 4, icon: 'package', name: '成人护理用品', desc: '护理垫/纸尿裤', price: '满49免运费', color: 'blue' },
+]
+
+// ===== 轮椅模式：无障碍导航 =====
+export const wheelchairAccessibleNav = {
+  nearbyFacilities: [
+    { id: 1, icon: 'hospital', name: '社区卫生服务中心', distance: '350米', accessible: true, route: '全程无障碍', eta: '5分钟' },
+    { id: 2, icon: 'shopping-cart', name: '永辉超市（无障碍入口）', distance: '500米', accessible: true, route: '有坡道+直梯', eta: '8分钟' },
+    { id: 3, icon: 'utensils', name: '社区老年食堂', distance: '280米', accessible: true, route: '平路直达', eta: '4分钟' },
+    { id: 4, icon: 'tree-pine', name: '翠湖公园（无障碍步道）', distance: '600米', accessible: true, route: '缓坡步道', eta: '10分钟' },
+  ],
+  accessibleRoutes: [
+    { name: '回家路线', from: '当前位置', to: '翠湖小区3号楼', distance: '600米', eta: '10分钟', obstacles: 0, type: '平路+缓坡' },
+    { name: '去医院路线', from: '当前位置', to: '社区卫生服务中心', distance: '350米', eta: '5分钟', obstacles: 0, type: '平路直达' },
+  ],
+}
+
+// ===== 轮椅模式：康复训练指导 =====
+export const wheelchairRehabGuide = [
+  { id: 1, name: '上肢力量训练', desc: '哑铃/弹力带训练', duration: '15分钟', icon: 'dumbbell', level: '入门', color: 'teal',
+    steps: ['热身活动 3分钟', '弹力带拉伸 5分钟', '哑铃举重 5分钟', '放松整理 2分钟'] },
+  { id: 2, name: '轮椅转移训练', desc: '床椅/轮椅/马桶转移', duration: '10分钟', icon: 'accessibility', level: '必备', color: 'blue',
+    steps: ['轮椅制动锁定', '身体前倾准备', '支撑扶手转移', '调整坐姿稳定'] },
+  { id: 3, name: '核心稳定训练', desc: '坐位平衡/躯干控制', duration: '12分钟', icon: 'activity', level: '进阶', color: 'green',
+    steps: ['坐位深呼吸 2分钟', '躯干前倾后仰 3分钟', '侧向移动训练 4分钟', '平衡维持 3分钟'] },
+  { id: 4, name: '下肢活动训练', desc: '关节活动度维持', duration: '10分钟', icon: 'footprints', level: '入门', color: 'gold',
+    steps: ['踝关节屈伸 3分钟', '膝关节屈伸 3分钟', '髋关节外展 2分钟', '按摩放松 2分钟'] },
+]
+
+
