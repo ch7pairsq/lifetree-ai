@@ -18,7 +18,7 @@ import {
   ShieldCheck, Info, Watch, Cpu, Battery, RefreshCw, ChevronDown, GlassWater,
   BookHeart, Trophy, ScrollText, Hand, Rocket,
   Newspaper, Play, Pause, Mountain, ZoomIn, Scissors, Book, Carrot,
-  Download, Image as ImageIcon, Wrench, HardHat,
+  Download, Image as ImageIcon, Wrench, HardHat, LogOut,
 } from 'lucide-vue-next'
 
 // 图标名称 -> 组件映射
@@ -157,6 +157,7 @@ const map: Record<string, Component> = {
   image: ImageIcon,
   wrench: Wrench,
   'hard-hat': HardHat,
+  'log-out': LogOut,
 }
 
 const props = withDefaults(defineProps<{

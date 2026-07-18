@@ -1,10 +1,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import { menuGroups, sharedMembers, smartDevices } from '@/mock'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+const router = useRouter()
+
+// 退出登录
+function handleLogout() {
+  userStore.logout()
+  router.replace('/login')
+}
+
+// 访问生命树官网
+function openOfficialWebsite() {
+  window.open('/official.html', '_blank')
+}
 
 // 菜单点击提示（标准/高龄/视障/卧床模式）
 function onMenu(text: string) {
@@ -494,6 +507,41 @@ function openInfoDialog(title: string, msg: string) {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 生命树官网入口 -->
+    <div class="official-section">
+      <a class="official-card" @click="openOfficialWebsite">
+        <span class="official-logo">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="13" r="8" fill="url(#offCrown)" />
+            <circle cx="12" cy="19" r="5.5" fill="url(#offCrown)" opacity="0.85" />
+            <circle cx="28" cy="19" r="5.5" fill="url(#offCrown)" opacity="0.85" />
+            <path d="M18 21 L18 33 L22 33 L22 21 Z" fill="#3E9A80" />
+            <path d="M13 33 Q20 35.5 27 33" stroke="#3E9A80" stroke-width="2" fill="none" stroke-linecap="round" />
+            <path d="M20 8.5 C18.8 7 16.8 7.5 16.8 9.5 C16.8 11.2 20 13 20 13 C20 13 23.2 11.2 23.2 9.5 C23.2 7.5 21.2 7 20 8.5 Z" fill="#fff" opacity="0.92" />
+            <defs>
+              <linearGradient id="offCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7DCEAF" />
+                <stop offset="100%" stop-color="#3E9A80" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="official-info">
+          <span class="official-title">生命树官网</span>
+          <span class="official-desc">了解产品 · 合作咨询 · 公益计划</span>
+        </span>
+        <span class="official-arrow"><AppIcon name="link" :size="18" color="var(--color-brand-dark)" /></span>
+      </a>
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="logout-section">
+      <button class="logout-btn" @click="handleLogout">
+        <AppIcon name="log-out" :size="18" color="var(--state-error)" />
+        <span>退出登录</span>
+      </button>
     </div>
 
     <!-- 底部占位 -->
@@ -1358,4 +1406,116 @@ function openInfoDialog(title: string, msg: string) {
   box-shadow: 0 6px 18px rgba(91, 184, 158, 0.4);
 }
 .app-alert-btn:active { transform: scale(0.97); }
+
+/* ============ 生命树官网入口 ============ */
+.official-section {
+  margin: var(--space-4) 0 var(--space-3);
+  padding: 0 4px;
+}
+.official-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.12), rgba(111, 177, 217, 0.08));
+  border: 1px solid rgba(91, 184, 158, 0.3);
+  box-shadow: 0 2px 10px rgba(91, 184, 158, 0.1);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+.official-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(91, 184, 158, 0.2);
+  border-color: rgba(91, 184, 158, 0.5);
+  background: linear-gradient(135deg, rgba(91, 184, 158, 0.18), rgba(111, 177, 217, 0.12));
+}
+.official-card:active {
+  transform: scale(0.98);
+}
+.official-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-surface-solid);
+  box-shadow: 0 2px 8px rgba(91, 184, 158, 0.2);
+  flex-shrink: 0;
+}
+.official-logo svg {
+  width: 30px;
+  height: 30px;
+}
+.official-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.official-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand-dark);
+  line-height: 1.3;
+}
+.official-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+.official-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+.official-card:hover .official-arrow {
+  background: var(--color-surface-solid);
+  transform: translate(2px, -2px);
+  box-shadow: 0 4px 10px rgba(91, 184, 158, 0.2);
+}
+
+/* ============ 退出登录按钮 ============ */
+.logout-section {
+  margin: 16px 0 0;
+  padding: 0 4px;
+}
+.logout-btn {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(212, 107, 107, 0.25);
+  border-radius: var(--radius-md);
+  color: var(--state-error);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+.logout-btn:hover {
+  background: rgba(212, 107, 107, 0.06);
+  border-color: rgba(212, 107, 107, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(212, 107, 107, 0.15);
+}
+.logout-btn:active {
+  transform: translateY(0);
+}
 </style>

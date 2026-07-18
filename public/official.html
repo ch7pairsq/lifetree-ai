@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>生命树 AI — 智慧生命管理平台 | 让科技温暖每一位中老年人</title>
+<meta name="description" content="生命树 AI 是面向中老年人的 AI 智慧康养平台，提供健康预测、AI 陪伴、智能记忆库、生活规划等服务。用 AI 更人性化地助老爱老，让每一位中老年人被理解、被陪伴、被守护。" />
+<link rel="icon" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* =====================================================
+   生命树 AI 官网 — 品牌门户
+   品牌绿 + 暖色 + 玻璃拟态 + 多层阴影
+   ===================================================== */
+:root{
+  --brand:#5BB89E; --brand-light:#7DCEAF; --brand-lighter:#B8E5D4;
+  --brand-dark:#3E9A80; --brand-darker:#2D7A64;
+  --accent2:#6FB1D9; --accent2-dark:#4A8FB5;
+  --accent3:#E8B87C; --accent3-dark:#D09A58;
+  --rose:#FD6585; --coral:#FF8E8E; --amber:#F6A35C;
+  --error:#D46B6B;
+  --bg:#FBFAF8; --bg-2:#F4F0EA; --bg-3:#EFF5F3;
+  --ink:#1F2A2E; --ink-2:#3D4A4F; --muted:#6B7B82; --muted-2:#94A3AA;
+  --line:rgba(46,60,66,0.08); --line-2:rgba(46,60,66,0.14);
+  --surface:rgba(255,255,255,0.72); --surface-solid:#FFFFFF;
+  --shadow-sm:0 1px 2px rgba(46,60,66,0.04),0 2px 8px rgba(46,60,66,0.04);
+  --shadow-md:0 4px 12px rgba(46,60,66,0.06),0 12px 32px rgba(46,60,66,0.06);
+  --shadow-lg:0 8px 24px rgba(46,60,66,0.08),0 24px 64px rgba(46,60,66,0.10);
+  --shadow-brand:0 8px 24px rgba(91,184,158,0.18),0 20px 48px rgba(91,184,158,0.14);
+  --r-sm:10px; --r-md:16px; --r-lg:24px; --r-xl:32px; --r-pill:9999px;
+  --font-display:'Outfit','Noto Sans SC','PingFang SC',sans-serif;
+  --font-body:'Lora','Noto Sans SC','PingFang SC','Microsoft YaHei',serif;
+  --font-sc:'Noto Sans SC','PingFang SC',sans-serif;
+  --maxw:1200px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body); color:var(--ink); background:var(--bg);
+  line-height:1.65; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(900px 600px at 12% -5%, rgba(91,184,158,0.14), transparent 60%),
+    radial-gradient(800px 500px at 95% 8%, rgba(111,177,217,0.12), transparent 55%),
+    radial-gradient(700px 500px at 50% 110%, rgba(232,184,124,0.10), transparent 60%),
+    var(--bg);
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+section{position:relative}
+
+/* ====== 导航栏 ====== */
+.nav{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:14px 0; transition:all .35s ease;
+}
+.nav-inner{
+  max-width:var(--maxw); margin:0 auto; padding:0 32px;
+  display:flex; align-items:center; justify-content:space-between; gap:24px;
+}
+.nav.scrolled{
+  background:rgba(251,250,248,0.78); backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow-sm);
+  padding:10px 0;
+}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:1.18rem;color:var(--ink)}
+.logo-mark{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--brand-light),var(--brand-dark));
+  display:grid;place-items:center;box-shadow:var(--shadow-brand);
+  position:relative;
+}
+.logo-mark svg{width:22px;height:22px}
+.logo span{color:var(--brand-dark)}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links a{
+  padding:8px 14px;border-radius:var(--r-pill);font-family:var(--font-sc);
+  font-size:.92rem;font-weight:500;color:var(--ink-2);transition:all .25s;
+}
+.nav-links a:hover{background:rgba(91,184,158,0.12);color:var(--brand-dark)}
+.nav-cta{
+  display:flex;gap:10px;align-items:center;
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--font-sc);font-weight:600;font-size:.95rem;
+  padding:11px 22px;border-radius:var(--r-pill);transition:all .3s cubic-bezier(.2,.8,.2,1);
+  white-space:nowrap;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  color:#fff; box-shadow:var(--shadow-brand);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(91,184,158,0.28),0 24px 56px rgba(91,184,158,0.18)}
+.btn-ghost{
+  background:rgba(255,255,255,0.6); color:var(--ink); border:1px solid var(--line-2);
+  backdrop-filter:blur(8px);
+}
+.btn-ghost:hover{background:#fff;border-color:var(--brand);color:var(--brand-dark);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.btn-lg{padding:15px 30px;font-size:1.02rem}
+.nav-toggle{display:none;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.7);border:1px solid var(--line-2)}
+.nav-toggle svg{width:20px;height:20px}
+
+/* ====== Hero ====== */
+.hero{
+  padding:150px 32px 90px; position:relative; overflow:hidden;
+}
+.hero-grid{
+  max-width:var(--maxw); margin:0 auto;
+  display:grid; grid-template-columns:1.05fr .95fr; gap:60px; align-items:center;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 16px;border-radius:var(--r-pill);
+  background:rgba(91,184,158,0.12);border:1px solid rgba(91,184,158,0.22);
+  color:var(--brand-dark);font-family:var(--font-sc);font-weight:600;font-size:.85rem;
+  margin-bottom:24px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(91,184,158,0.2);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+.hero h1{
+  font-family:var(--font-display); font-weight:800;
+  font-size:clamp(2.4rem,5.2vw,4rem); line-height:1.08; letter-spacing:-.02em;
+  color:var(--ink); margin-bottom:24px;
+}
+.hero h1 .grad{
+  background:linear-gradient(120deg,var(--brand-dark) 0%,var(--accent2-dark) 60%,var(--accent3-dark) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero .lede{
+  font-size:1.18rem; color:var(--ink-2); max-width:540px; margin-bottom:34px;
+  line-height:1.75;
+}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:48px}
+.hero-stats{display:flex;gap:40px;flex-wrap:wrap}
+.stat .num{font-family:var(--font-display);font-weight:800;font-size:2rem;color:var(--brand-dark);line-height:1}
+.stat .label{font-family:var(--font-sc);font-size:.9rem;color:var(--muted);margin-top:6px}
+
+/* Hero 视觉 — AI 轮播 */
+.hero-visual{position:relative;display:grid;place-items:center;min-height:680px;width:100%;padding-bottom:72px}
+.carousel{
+  position:relative;width:100%;max-width:560px;min-height:560px;
+  border-radius:var(--r-xl);overflow:visible;
+  background:linear-gradient(160deg,#fff 0%,rgba(184,229,212,0.3) 100%);
+  box-shadow:var(--shadow-lg),0 0 0 1px rgba(255,255,255,0.8);
+  border:1px solid rgba(255,255,255,0.8);
+}
+/* 轮播轨道与图片裁剪放在内层 */
+.carousel-track{position:absolute;inset:0;border-radius:var(--r-xl);overflow:hidden}
+.carousel:hover .carousel-progress-bar{animation-play-state:paused}
+.carousel:hover .carousel-slide.active [class*="anim-"]{animation-play-state:paused}
+/* 单张轮播 */
+.carousel-slide{
+  position:absolute;inset:0;opacity:0;transform:scale(1.06);
+  transition:opacity .9s ease,transform 1.4s cubic-bezier(.2,.8,.2,1);
+  pointer-events:none;
+}
+.carousel-slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+.carousel-slide svg{width:100%;height:100%;display:block}
+
+/* 指示器 */
+.carousel-indicators{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;gap:7px;z-index:10;
+}
+.carousel-dot{
+  width:8px;height:8px;border-radius:50%;padding:0;border:none;
+  background:rgba(91,184,158,0.35);cursor:pointer;transition:all .35s;
+}
+.carousel-dot.active{
+  width:28px;border-radius:4px;
+  background:linear-gradient(90deg,var(--brand),var(--brand-dark));
+  box-shadow:0 2px 8px rgba(91,184,158,0.4);
+}
+
+/* 箭头 */
+.carousel-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:36px;height:36px;border-radius:50%;padding:0;
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.9);box-shadow:var(--shadow-sm);
+  display:grid;place-items:center;color:var(--brand-dark);
+  cursor:pointer;z-index:10;transition:all .25s;
+}
+.carousel-arrow:hover{background:#fff;transform:translateY(-50%) scale(1.12);box-shadow:var(--shadow-md)}
+.carousel-arrow.prev{left:12px}
+.carousel-arrow.next{right:12px}
+
+/* 进度条 */
+.carousel-progress{position:absolute;top:0;left:0;right:0;height:3px;background:rgba(91,184,158,0.12);z-index:10}
+.carousel-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent2))}
+
+/* 底部标题 — 移到轮播外部下方,避免遮挡 SVG 内容 */
+.carousel-caption{
+  position:absolute;left:0;right:0;bottom:-56px;text-align:center;padding:0 20px;
+  pointer-events:none;
+}
+.carousel-caption .title{
+  font-family:var(--font-sc);font-weight:700;font-size:1.02rem;color:var(--ink);
+  margin-bottom:3px;
+}
+.carousel-caption .desc{font-size:.8rem;color:var(--muted)}
+
+/* 浮动芯片 */
+.float-chip{
+  position:absolute;display:flex;align-items:center;gap:9px;
+  padding:9px 13px;border-radius:13px;
+  background:rgba(255,255,255,0.9);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.95);box-shadow:var(--shadow-md);
+  font-family:var(--font-sc);font-size:.78rem;font-weight:600;color:var(--ink);
+  z-index:15;animation:floaty 5s ease-in-out infinite;
+}
+.float-chip .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;flex-shrink:0}
+.float-chip.c1{top:5%;left:-9%;animation-delay:0s}
+.float-chip.c2{top:28%;right:-11%;animation-delay:1.5s}
+.float-chip.c3{top:52%;left:-7%;animation-delay:3s}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ====== SVG 内部动画 ====== */
+/* 所有动画默认暂停,active 时运行 */
+.carousel-slide [class*="anim-"]{animation-play-state:paused}
+.carousel-slide.active [class*="anim-"]{animation-play-state:running}
+
+/* 健康评分环绘制 */
+.anim-ring-draw{stroke-dasharray:502;stroke-dashoffset:502;animation:ringDraw 2s cubic-bezier(.4,0,.2,1) .3s forwards}
+@keyframes ringDraw{to{stroke-dashoffset:90}}
+
+/* EKG 心率波形 */
+.anim-ekg{stroke-dasharray:600;stroke-dashoffset:600;animation:ekgDraw 3s linear infinite}
+@keyframes ekgDraw{0%{stroke-dashoffset:600}50%{stroke-dashoffset:0}100%{stroke-dashoffset:-600}}
+
+/* 脉冲点 */
+.anim-pulse{animation:pulseDot 2s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* 数据流(连接线上的移动点) */
+.anim-flow{animation:flowMove 2.5s linear infinite}
+@keyframes flowMove{0%{offset-distance:0%;opacity:0}10%{opacity:1}90%{opacity:1}100%{offset-distance:100%;opacity:0}}
+
+/* AI 光环脉冲 */
+.anim-ai-ring{transform-origin:center;animation:aiRing 2.5s ease-out infinite}
+@keyframes aiRing{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+
+/* 声波柱 */
+.anim-wave{animation:waveBar 1.2s ease-in-out infinite}
+@keyframes waveBar{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+
+/* 节点旋转(卫星围绕中心) */
+.anim-orbit{transform-origin:200px 200px;animation:orbit 20s linear infinite}
+@keyframes orbit{to{transform:rotate(360deg)}}
+
+/* 守护光环 */
+.anim-guardian{transform-origin:center;animation:guardian 3s ease-in-out infinite}
+@keyframes guardian{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:.8}}
+
+/* 数据卡片淡入 */
+.anim-card-in{opacity:0;animation:cardIn .6s ease-out forwards}
+@keyframes cardIn{to{opacity:1}}
+.anim-card-in.d1{animation-delay:.4s}.anim-card-in.d2{animation-delay:.6s}.anim-card-in.d3{animation-delay:.8s}.anim-card-in.d4{animation-delay:1s}
+
+/* 气泡淡入 */
+.anim-bubble-in{opacity:0;animation:bubbleIn .6s ease-out forwards}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.anim-bubble-in.d1{animation-delay:.3s}.anim-bubble-in.d2{animation-delay:.8s}
+
+/* 神经网络节点闪烁 */
+.anim-neuron{animation:neuronBlink 3s ease-in-out infinite}
+@keyframes neuronBlink{0%,100%{opacity:.3}50%{opacity:.9}}
+
+/* ====== 通用 section ====== */
+.section{padding:96px 32px;position:relative}
+.section-head{max-width:760px;margin:0 auto 56px;text-align:center}
+.section-tag{
+  display:inline-block;font-family:var(--font-sc);font-weight:600;font-size:.85rem;
+  color:var(--brand-dark);letter-spacing:.08em;margin-bottom:14px;
+  padding:5px 14px;border-radius:var(--r-pill);background:rgba(91,184,158,0.1);
+}
+.section h2{
+  font-family:var(--font-display);font-weight:700;
+  font-size:clamp(1.9rem,3.6vw,2.8rem);line-height:1.18;letter-spacing:-.01em;
+  color:var(--ink);margin-bottom:18px;
+}
+.section-desc{font-size:1.08rem;color:var(--muted);line-height:1.8}
+.container{max-width:var(--maxw);margin:0 auto}
+
+/* ====== 产品闭环 ====== */
+.loop-wrap{display:flex;flex-direction:column;align-items:center;gap:20px}
+.loop-chain{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:14px;width:100%;
+}
+.loop-node{
+  position:relative;padding:24px 18px;border-radius:var(--r-lg);
+  background:var(--surface-solid);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);transition:all .35s cubic-bezier(.2,.8,.2,1);
+  text-align:center;
+}
+.loop-node:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:rgba(91,184,158,0.3)}
+.loop-node .ic{
+  width:48px;height:48px;border-radius:14px;margin:0 auto 14px;
+  display:grid;place-items:center;color:#fff;
+}
+.loop-node h4{font-family:var(--font-sc);font-weight:600;font-size:1rem;margin-bottom:4px}
+.loop-node p{font-size:.82rem;color:var(--muted);line-height:1.5}
+.loop-arrow{position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--brand);z-index:2}
+.loop-node:last-child .loop-arrow{display:none}
+.loop-foot{
+  font-family:var(--font-sc);color:var(--muted);font-size:.96rem;text-align:center;
+  max-width:680px;line-height:1.8;
+}
+
+/* ====== 八大模块 ====== */
+.modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.module-card{
+  padding:28px 24px;border-radius:var(--r-lg);
+  background:var(--surface-solid);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);transition:all .35s cubic-bezier(.2,.8,.2,1);
+  position:relative;overflow:hidden;
+}
+.module-card::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--brand),var(--accent2));
+  transform:scaleX(0);transform-origin:left;transition:transform .4s ease;
+}
+.module-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg);border-color:rgba(91,184,158,0.25)}
+.module-card:hover::after{transform:scaleX(1)}
+.module-card .ic{
+  width:52px;height:52px;border-radius:14px;margin-bottom:18px;
+  display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm);
+}
+.module-card h4{font-family:var(--font-sc);font-weight:600;font-size:1.1rem;margin-bottom:6px}
+.module-card p{font-size:.9rem;color:var(--muted);line-height:1.6}
+
+/* ====== AI 引擎 ====== */
+.engines{background:linear-gradient(180deg,transparent,rgba(91,184,158,0.04) 50%,transparent)}
+.engine-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.engine-card{
+  padding:24px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.6);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.7);transition:all .3s;
+}
+.engine-card:hover{background:#fff;transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.engine-card .num{font-family:var(--font-display);font-weight:800;font-size:1.6rem;color:var(--brand);line-height:1}
+.engine-card h5{font-family:var(--font-sc);font-weight:600;font-size:1rem;margin:10px 0 4px}
+.engine-card p{font-size:.84rem;color:var(--muted)}
+
+/* ====== 差异化适老 ====== */
+.care-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.care-card{
+  border-radius:var(--r-lg);padding:28px 22px;color:#fff;
+  position:relative;overflow:hidden;min-height:280px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  transition:all .35s cubic-bezier(.2,.8,.2,1);
+}
+.care-card:hover{transform:translateY(-8px) scale(1.01);box-shadow:var(--shadow-lg)}
+.care-card .tag{align-self:flex-start;font-family:var(--font-sc);font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);background:rgba(255,255,255,0.22);backdrop-filter:blur(6px);margin-bottom:14px}
+.care-card h4{font-family:var(--font-sc);font-weight:700;font-size:1.18rem;margin-bottom:6px}
+.care-card .age{font-size:.84rem;opacity:.9;margin-bottom:14px}
+.care-card .focus{font-size:.85rem;line-height:1.6;opacity:.95}
+.care-card .mode{margin-top:14px;font-family:var(--font-sc);font-size:.82rem;font-weight:600;padding-top:12px;border-top:1px solid rgba(255,255,255,0.25)}
+.c-1{background:linear-gradient(150deg,#C8F0E0,#5BB89E)}
+.c-2{background:linear-gradient(150deg,#FCE58A,#F6A35C)}
+.c-3{background:linear-gradient(150deg,#B8E5D4,#3E9A80)}
+.c-4{background:linear-gradient(150deg,#FFD3A5,#FD6585)}
+.c-5{background:linear-gradient(150deg,#9CC8E5,#4A8FB5)}
+
+/* ====== 产品亮点（对话演示） ====== */
+.highlight{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.highlight.reverse .highlight-media{order:2}
+.highlight-media{
+  border-radius:var(--r-xl);overflow:hidden;
+  background:linear-gradient(160deg,#fff,rgba(184,229,212,0.3));
+  box-shadow:var(--shadow-lg);border:1px solid rgba(255,255,255,0.8);
+  padding:32px;position:relative;
+}
+.demo-chat{display:flex;flex-direction:column;gap:14px}
+.chat-bubble{
+  max-width:88%;padding:14px 18px;border-radius:18px;
+  font-family:var(--font-sc);font-size:.95rem;line-height:1.65;
+  animation:fadeUp .5s ease both;
+}
+.chat-bubble.user{align-self:flex-end;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;border-bottom-right-radius:6px;box-shadow:var(--shadow-brand)}
+.chat-bubble.ai{align-self:flex-start;background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:6px;box-shadow:var(--shadow-sm)}
+.chat-bubble.ai .actions{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.chat-action{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(91,184,158,0.08);border-radius:10px;font-size:.86rem;color:var(--brand-dark)}
+.chat-action .check{width:18px;height:18px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:.7rem;flex-shrink:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.chat-bubble:nth-child(1){animation-delay:.1s}
+.chat-bubble:nth-child(2){animation-delay:.5s}
+.chat-bubble:nth-child(3){animation-delay:1s}
+
+.highlight-text h3{font-family:var(--font-display);font-weight:700;font-size:clamp(1.6rem,2.8vw,2.2rem);line-height:1.2;margin-bottom:18px;color:var(--ink)}
+.highlight-text p{color:var(--ink-2);font-size:1.05rem;line-height:1.8;margin-bottom:20px}
+.highlight-list{list-style:none;display:flex;flex-direction:column;gap:14px}
+.highlight-list li{display:flex;gap:12px;font-family:var(--font-sc);font-size:.96rem;color:var(--ink-2);line-height:1.6}
+.highlight-list .check{width:22px;height:22px;border-radius:50%;background:rgba(91,184,158,0.15);color:var(--brand-dark);display:grid;place-items:center;flex-shrink:0;font-size:.75rem;font-weight:700;margin-top:2px}
+
+/* 健康评分环 */
+.health-ring{display:flex;align-items:center;gap:28px;padding:8px 0}
+.ring-wrap{position:relative;width:160px;height:160px;flex-shrink:0}
+.ring-svg{transform:rotate(-90deg)}
+.ring-track{stroke:rgba(91,184,158,0.12);fill:none;stroke-width:12}
+.ring-fill{stroke:url(#ringGrad);fill:none;stroke-width:12;stroke-linecap:round;stroke-dasharray:440;stroke-dashoffset:88;animation:ringDraw 1.6s ease-out .3s both}
+@keyframes ringDraw{from{stroke-dashoffset:440}to{stroke-dashoffset:88}}
+.ring-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring-center .v{font-family:var(--font-display);font-weight:800;font-size:2.4rem;color:var(--brand-dark);line-height:1}
+.ring-center .l{font-family:var(--font-sc);font-size:.82rem;color:var(--muted);margin-top:4px}
+.risk-list{flex:1;display:flex;flex-direction:column;gap:10px}
+.risk-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.6);border:1px solid var(--line)}
+.risk-row .name{font-family:var(--font-sc);font-size:.9rem;color:var(--ink-2)}
+.risk-row .lvl{font-family:var(--font-sc);font-size:.82rem;font-weight:600;padding:3px 10px;border-radius:var(--r-pill)}
+.lvl.low{background:rgba(91,184,158,0.15);color:var(--brand-dark)}
+.lvl.mid{background:rgba(232,184,124,0.18);color:var(--accent3-dark)}
+.lvl.high{background:rgba(212,107,107,0.15);color:var(--error)}
+
+/* ====== 下载引导 ====== */
+.download{
+  background:linear-gradient(135deg,var(--brand-darker) 0%,var(--brand-dark) 50%,var(--accent2-dark) 100%);
+  border-radius:var(--r-xl);padding:72px 56px;color:#fff;position:relative;overflow:hidden;
+}
+.download::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,0.12),transparent 50%),radial-gradient(circle at 10% 90%,rgba(232,184,124,0.15),transparent 50%)}
+.download-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative;z-index:1}
+.download-text h2{color:#fff;font-family:var(--font-display);font-weight:800;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.18;margin-bottom:18px}
+.download-text p{color:rgba(255,255,255,0.88);font-size:1.08rem;line-height:1.8;margin-bottom:28px}
+.download-features{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.download-features li{display:flex;align-items:center;gap:12px;font-family:var(--font-sc);color:rgba(255,255,255,0.92)}
+.download-features .check{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.2);display:grid;place-items:center;flex-shrink:0}
+.download-cta{display:flex;gap:14px;flex-wrap:wrap}
+.btn-white{background:#fff;color:var(--brand-darker);box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.2)}
+.btn-outline-w{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.4);backdrop-filter:blur(6px)}
+.btn-outline-w:hover{background:rgba(255,255,255,0.18);transform:translateY(-2px)}
+
+.qr-cards{display:flex;gap:18px;justify-content:center}
+.qr-card{
+  background:rgba(255,255,255,0.95);border-radius:var(--r-lg);padding:24px 20px;text-align:center;
+  min-width:200px;transition:all .35s;backdrop-filter:blur(10px);
+}
+.qr-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,0.2)}
+.qr-img{width:148px;height:148px;border-radius:14px;margin:0 auto 14px;background:#fff;display:grid;place-items:center;border:1px solid var(--line)}
+.qr-img svg{width:100%;height:100%}
+.qr-card h4{font-family:var(--font-sc);font-weight:600;color:var(--ink);font-size:1rem;margin-bottom:4px}
+.qr-card p{font-size:.82rem;color:var(--muted)}
+
+/* ====== 公益计划 ====== */
+.charity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.charity-card{
+  padding:36px 30px;border-radius:var(--r-lg);
+  background:var(--surface-solid);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);transition:all .35s;
+  position:relative;overflow:hidden;
+}
+.charity-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.charity-card .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.charity-card h4{font-family:var(--font-sc);font-weight:700;font-size:1.2rem;margin-bottom:10px}
+.charity-card p{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:16px}
+.charity-card .meta{font-family:var(--font-sc);font-size:.86rem;color:var(--brand-dark);font-weight:600;display:flex;align-items:center;gap:8px}
+
+/* ====== 合作咨询 ====== */
+.contact{background:linear-gradient(180deg,transparent,rgba(111,177,217,0.04))}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.contact-info h3{font-family:var(--font-display);font-weight:700;font-size:1.8rem;margin-bottom:16px}
+.contact-info p{color:var(--muted);font-size:1.05rem;line-height:1.8;margin-bottom:28px}
+.contact-list{display:flex;flex-direction:column;gap:16px}
+.contact-item{display:flex;gap:16px;padding:18px 20px;border-radius:var(--r-md);background:var(--surface-solid);border:1px solid var(--line);box-shadow:var(--shadow-sm);transition:all .3s}
+.contact-item:hover{border-color:rgba(91,184,158,0.3);transform:translateX(4px)}
+.contact-item .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;flex-shrink:0}
+.contact-item h5{font-family:var(--font-sc);font-weight:600;font-size:.98rem;margin-bottom:2px}
+.contact-item p{font-size:.9rem;color:var(--muted);margin:0}
+
+.contact-form{
+  background:var(--surface-solid);border:1px solid var(--line);
+  border-radius:var(--r-xl);padding:36px;box-shadow:var(--shadow-md);
+}
+.form-title{font-family:var(--font-sc);font-weight:700;font-size:1.3rem;margin-bottom:6px}
+.form-sub{color:var(--muted);font-size:.92rem;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-family:var(--font-sc);font-size:.88rem;font-weight:500;color:var(--ink-2);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line-2);
+  background:var(--bg);font-family:var(--font-sc);font-size:.95rem;color:var(--ink);
+  transition:all .25s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(91,184,158,0.12)
+}
+.form-group textarea{resize:vertical;min-height:96px}
+.form-submit{width:100%;margin-top:8px}
+
+/* ====== 页脚 ====== */
+.footer{background:#1F2A2E;color:rgba(255,255,255,0.7);padding:72px 32px 32px}
+.footer-grid{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand .logo{color:#fff;margin-bottom:16px}
+.footer-brand p{font-size:.92rem;line-height:1.7;margin-bottom:20px;max-width:320px}
+.footer-social{display:flex;gap:10px}
+.footer-social a{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.08);display:grid;place-items:center;transition:all .25s}
+.footer-social a:hover{background:var(--brand);transform:translateY(-2px)}
+.footer-social svg{width:18px;height:18px}
+.footer-col h5{font-family:var(--font-sc);font-weight:600;color:#fff;font-size:1rem;margin-bottom:18px}
+.footer-col a{display:block;font-size:.9rem;margin-bottom:12px;transition:color .2s}
+.footer-col a:hover{color:var(--brand-light)}
+.footer-bottom{max-width:var(--maxw);margin:0 auto;padding-top:28px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-size:.85rem}
+
+/* ====== 滚动入场动画 ====== */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}.reveal.d5{transition-delay:.4s}.reveal.d6{transition-delay:.48s}.reveal.d7{transition-delay:.56s}
+
+/* ====== 响应式 ====== */
+@media (max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .hero-visual{min-height:580px;max-width:520px;margin:0 auto}
+  .modules-grid{grid-template-columns:repeat(2,1fr)}
+  .engine-grid{grid-template-columns:repeat(2,1fr)}
+  .care-grid{grid-template-columns:repeat(2,1fr)}
+  .highlight{grid-template-columns:1fr;gap:40px}
+  .highlight.reverse .highlight-media{order:0}
+  .download-grid{grid-template-columns:1fr;gap:36px}
+  .contact-grid{grid-template-columns:1fr;gap:40px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .loop-chain{grid-template-columns:repeat(3,1fr)}
+  .loop-arrow{display:none}
+}
+@media (max-width:768px){
+  .nav-links{display:none}
+  .nav-cta .btn-ghost{display:none}
+  .nav-toggle{display:grid}
+  .nav-links.open{
+    display:flex;position:absolute;top:100%;left:16px;right:16px;
+    flex-direction:column;background:rgba(251,250,248,0.96);backdrop-filter:blur(20px);
+    padding:16px;border-radius:var(--r-lg);box-shadow:var(--shadow-lg);border:1px solid var(--line);
+  }
+  .nav-links.open a{width:100%;padding:12px 16px}
+  .section{padding:72px 20px}
+  .hero{padding:120px 20px 72px}
+  .modules-grid,.engine-grid,.care-grid,.charity-grid{grid-template-columns:1fr}
+  .loop-chain{grid-template-columns:1fr 1fr}
+  .download{padding:48px 28px}
+  .contact-form{padding:24px}
+  .form-row{grid-template-columns:1fr}
+  .hero-stats{gap:24px}
+  .footer-grid{grid-template-columns:1fr}
+  .qr-cards{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<!-- ====== 导航栏 ====== -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22V12"/><path d="M12 12c0-4 2-7 6-7 0 4-2 7-6 7z"/><path d="M12 12c0-4-2-7-6-7 0 4 2 7 6 7z"/>
+        </svg>
+      </span>
+      生命树<span>AI</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#product">产品介绍</a>
+      <a href="#modules">核心模块</a>
+      <a href="#care">适老方案</a>
+      <a href="#download">下载</a>
+      <a href="#charity">公益计划</a>
+      <a href="#contact">合作咨询</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#download" class="btn btn-ghost">小程序体验</a>
+      <a href="#contact" class="btn btn-primary">合作咨询</a>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ====== Hero ====== -->
+<header class="hero" id="top">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <div class="eyebrow reveal"><span class="dot"></span> AI 智慧康养平台 · 公益初心</div>
+      <h1 class="reveal d1">让科技<span class="grad">温暖每一位</span><br/>中老年人</h1>
+      <p class="lede reveal d2">用 AI 更人性化地助老爱老 —— 每日风险预测、私人秘书式生活规划、智能记忆库，让每一位中老年人被理解、被陪伴、被守护。</p>
+      <div class="hero-actions reveal d3">
+        <a href="#download" class="btn btn-primary btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          立即下载体验
+        </a>
+        <a href="#product" class="btn btn-ghost btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          了解产品
+        </a>
+      </div>
+      <div class="hero-stats reveal d4">
+        <div class="stat"><div class="num">5.4亿</div><div class="label">中国中老年人口</div></div>
+        <div class="stat"><div class="num">10</div><div class="label">细分用户群体</div></div>
+        <div class="stat"><div class="num">8</div><div class="label">大AI引擎</div></div>
+        <div class="stat"><div class="num">10</div><div class="label">UI适配模式</div></div>
+      </div>
+    </div>
+    <div class="hero-visual reveal d2">
+      <div class="carousel" id="heroCarousel">
+
+        <!-- 进度条 -->
+        <div class="carousel-progress"><div class="carousel-progress-bar" id="carouselProgress"></div></div>
+
+        <!-- 轮播轨道 -->
+        <div class="carousel-track">
+
+          <!-- ===== Slide 1: AI 健康监测中心 ===== -->
+          <div class="carousel-slide active" data-slide="0">
+            <svg viewBox="0 0 400 400" fill="none">
+              <defs>
+                <linearGradient id="s1Bg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#F0FBF7"/><stop offset="1" stop-color="#E0F4ED"/>
+                </linearGradient>
+                <linearGradient id="s1Ring" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#5BB89E"/><stop offset="1" stop-color="#4A8FB5"/>
+                </linearGradient>
+                <linearGradient id="s1Card" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#F7FBFA"/>
+                </linearGradient>
+                <radialGradient id="s1Glow" cx="0.5" cy="0.42" r="0.45">
+                  <stop offset="0" stop-color="#5BB89E" stop-opacity="0.18"/><stop offset="1" stop-color="#5BB89E" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="400" height="400" fill="url(#s1Bg)"/>
+              <!-- 网格 -->
+              <g stroke="#5BB89E" stroke-opacity="0.08" stroke-width="1">
+                <path d="M0 80H400M0 160H400M0 240H400M0 320H400"/>
+                <path d="M80 0V400M160 0V400M240 0V400M320 0V400"/>
+              </g>
+              <!-- 中心光晕 -->
+              <circle cx="200" cy="180" r="130" fill="url(#s1Glow)"/>
+
+              <!-- 中心:健康评分环 -->
+              <circle cx="200" cy="180" r="80" fill="none" stroke="rgba(91,184,158,0.15)" stroke-width="14"/>
+              <circle class="anim-ring-draw" cx="200" cy="180" r="80" fill="none" stroke="url(#s1Ring)" stroke-width="14" stroke-linecap="round" transform="rotate(-90 200 180)"/>
+              <!-- 评分文字 -->
+              <text x="200" y="172" text-anchor="middle" font-family="Outfit,sans-serif" font-size="48" font-weight="800" fill="#3E9A80">82</text>
+              <text x="200" y="198" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="13" font-weight="600" fill="#6B7B82">健康指数</text>
+              <text x="200" y="216" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="#94A3AA">今日良好</text>
+              <!-- 环上脉冲点 -->
+              <circle class="anim-pulse" cx="200" cy="100" r="4" fill="#5BB89E" style="transform-origin:200px 100px"/>
+
+              <!-- 四角数据卡片 -->
+              <!-- 左上:血压 -->
+              <g class="anim-card-in d1">
+                <rect x="24" y="44" width="92" height="56" rx="10" fill="url(#s1Card)" stroke="rgba(91,184,158,0.2)"/>
+                <circle cx="40" cy="60" r="8" fill="rgba(253,101,133,0.15)"/>
+                <path d="M36 60h4l2-4 2 8 2-4h4" stroke="#FD6585" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="54" y="64" font-family="'Noto Sans SC',sans-serif" font-size="9" fill="#94A3AA">血压</text>
+                <text x="54" y="80" font-family="Outfit,sans-serif" font-size="15" font-weight="700" fill="#1F2A2E">128/82</text>
+                <text x="54" y="92" font-family="'Noto Sans SC',sans-serif" font-size="8" fill="#5BB89E">正常</text>
+              </g>
+              <!-- 右上:心率 -->
+              <g class="anim-card-in d2">
+                <rect x="284" y="44" width="92" height="56" rx="10" fill="url(#s1Card)" stroke="rgba(91,184,158,0.2)"/>
+                <circle cx="300" cy="60" r="8" fill="rgba(91,184,158,0.15)"/>
+                <path d="M27 12c-1 0-2 1-2 2 0 3 4 5 4 5s4-2 4-5c0-1-1-2-2-2s-2 1-2 2c0-1-1-2-2-2z" transform="translate(293 52) scale(.7)" fill="#5BB89E"/>
+                <text x="314" y="64" font-family="'Noto Sans SC',sans-serif" font-size="9" fill="#94A3AA">心率</text>
+                <text x="314" y="80" font-family="Outfit,sans-serif" font-size="15" font-weight="700" fill="#1F2A2E">72<tspan font-size="9" fill="#94A3AA" font-weight="400"> bpm</tspan></text>
+                <text x="314" y="92" font-family="'Noto Sans SC',sans-serif" font-size="8" fill="#5BB89E">规律</text>
+              </g>
+              <!-- 左下:睡眠 -->
+              <g class="anim-card-in d3">
+                <rect x="24" y="260" width="92" height="56" rx="10" fill="url(#s1Card)" stroke="rgba(91,184,158,0.2)"/>
+                <circle cx="40" cy="276" r="8" fill="rgba(111,177,217,0.15)"/>
+                <path d="M35 278a5 5 0 1 0 5-5 4 4 0 0 1-5 5z" fill="#6FB1D9"/>
+                <text x="54" y="280" font-family="'Noto Sans SC',sans-serif" font-size="9" fill="#94A3AA">睡眠</text>
+                <text x="54" y="296" font-family="Outfit,sans-serif" font-size="15" font-weight="700" fill="#1F2A2E">7.2<tspan font-size="9" fill="#94A3AA" font-weight="400"> h</tspan></text>
+                <text x="54" y="308" font-family="'Noto Sans SC',sans-serif" font-size="8" fill="#5BB89E">优质</text>
+              </g>
+              <!-- 右下:步数 -->
+              <g class="anim-card-in d4">
+                <rect x="284" y="260" width="92" height="56" rx="10" fill="url(#s1Card)" stroke="rgba(91,184,158,0.2)"/>
+                <circle cx="300" cy="276" r="8" fill="rgba(232,184,124,0.18)"/>
+                <path d="M298 274v6m4-6v6m4-6v6" stroke="#E8B87C" stroke-width="1.5" stroke-linecap="round"/>
+                <text x="314" y="280" font-family="'Noto Sans SC',sans-serif" font-size="9" fill="#94A3AA">步数</text>
+                <text x="314" y="296" font-family="Outfit,sans-serif" font-size="15" font-weight="700" fill="#1F2A2E">3,280</text>
+                <text x="314" y="308" font-family="'Noto Sans SC',sans-serif" font-size="8" fill="#E8B87C">达标</text>
+              </g>
+
+              <!-- 底部 EKG 心率波形(下移避开数据卡片) -->
+              <g transform="translate(0 325)">
+                <rect x="24" y="0" width="352" height="44" rx="10" fill="rgba(255,255,255,0.85)" stroke="rgba(91,184,158,0.2)"/>
+                <path class="anim-ekg" d="M40 22h60l8-12 6 24 6-24 8 12h60l8-12 6 24 6-24 8 12h60l8-12 6 24 6-24 8 12h60l8-12 6 24 6-24 8 12h60" stroke="#5BB89E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="40" y="40" font-family="'Noto Sans SC',sans-serif" font-size="8" fill="#94A3AA">实时心率监测</text>
+              </g>
+
+              <!-- 装饰脉冲点 -->
+              <circle class="anim-pulse" cx="200" cy="100" r="3" fill="#5BB89E" style="transform-origin:200px 100px;animation-delay:.5s"/>
+              <circle class="anim-pulse" cx="280" cy="180" r="3" fill="#6FB1D9" style="transform-origin:280px 180px;animation-delay:1s"/>
+              <circle class="anim-pulse" cx="120" cy="180" r="3" fill="#E8B87C" style="transform-origin:120px 180px;animation-delay:1.5s"/>
+            </svg>
+            <div class="carousel-caption"><div class="title">AI 健康监测中心</div><div class="desc">每日评分 · 8 维风险预测 · 实时预警</div></div>
+          </div>
+
+          <!-- ===== Slide 2: AI 智能陪伴对话 ===== -->
+          <div class="carousel-slide" data-slide="1">
+            <svg viewBox="0 0 400 400" fill="none">
+              <defs>
+                <linearGradient id="s2Bg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FFF7F0"/><stop offset="1" stop-color="#FCEEE2"/>
+                </linearGradient>
+                <linearGradient id="s2Avatar" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#7DCEAF"/><stop offset="1" stop-color="#3E9A80"/>
+                </linearGradient>
+                <linearGradient id="s2UserBubble" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FFF"/><stop offset="1" stop-color="#F7FBFA"/>
+                </linearGradient>
+                <radialGradient id="s2Glow" cx="0.5" cy="0.42" r="0.45">
+                  <stop offset="0" stop-color="#F6A35C" stop-opacity="0.16"/><stop offset="1" stop-color="#F6A35C" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="400" height="400" fill="url(#s2Bg)"/>
+              <!-- 神经网络背景节点 -->
+              <g stroke="#E8B87C" stroke-opacity="0.18" stroke-width="1" fill="none">
+                <path d="M40 60L120 100M120 100L200 60M200 60L280 100M280 100L360 60"/>
+                <path d="M40 340L120 300M120 300L200 340M200 340L280 300M280 300L360 340"/>
+                <path d="M40 60L40 340M120 100L120 300M200 60L200 340M280 100L280 300M360 60L360 340"/>
+              </g>
+              <g fill="#E8B87C">
+                <circle class="anim-neuron" cx="40" cy="60" r="3" style="animation-delay:0s"/>
+                <circle class="anim-neuron" cx="120" cy="100" r="3" style="animation-delay:.4s"/>
+                <circle class="anim-neuron" cx="200" cy="60" r="3" style="animation-delay:.8s"/>
+                <circle class="anim-neuron" cx="280" cy="100" r="3" style="animation-delay:1.2s"/>
+                <circle class="anim-neuron" cx="360" cy="60" r="3" style="animation-delay:1.6s"/>
+                <circle class="anim-neuron" cx="40" cy="340" r="3" style="animation-delay:2s"/>
+                <circle class="anim-neuron" cx="120" cy="300" r="3" style="animation-delay:.6s"/>
+                <circle class="anim-neuron" cx="200" cy="340" r="3" style="animation-delay:1s"/>
+                <circle class="anim-neuron" cx="280" cy="300" r="3" style="animation-delay:1.4s"/>
+                <circle class="anim-neuron" cx="360" cy="340" r="3" style="animation-delay:1.8s"/>
+              </g>
+              <circle cx="200" cy="180" r="130" fill="url(#s2Glow)"/>
+
+              <!-- 中心:小康 AI 核心 + 光环 -->
+              <circle class="anim-ai-ring" cx="200" cy="180" r="62" fill="none" stroke="#5BB89E" stroke-width="2" style="transform-origin:200px 180px"/>
+              <circle class="anim-ai-ring" cx="200" cy="180" r="62" fill="none" stroke="#6FB1D9" stroke-width="2" style="transform-origin:200px 180px;animation-delay:1.2s"/>
+              <!-- 小康 AI 核心方块(芯片造型) -->
+              <rect x="156" y="136" width="88" height="88" rx="18" fill="url(#s2Avatar)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 6px 18px rgba(91,184,158,0.35))"/>
+              <!-- 芯片引脚(上下左右) -->
+              <g stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.85">
+                <path d="M170 136v-8M186 136v-8M202 136v-8M218 136v-8M234 136v-8"/>
+                <path d="M170 232v8M186 232v8M202 232v8M218 232v8M234 232v8"/>
+                <path d="M156 150h-8M156 166h-8M156 182h-8M156 198h-8M156 214h-8"/>
+                <path d="M244 150h8M244 166h8M244 182h8M244 198h8M244 214h8"/>
+              </g>
+              <!-- 芯片内 AI 符号 -->
+              <rect x="172" y="152" width="56" height="56" rx="10" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <text x="200" y="190" text-anchor="middle" font-family="Outfit,sans-serif" font-size="26" font-weight="800" fill="#fff" letter-spacing="1">AI</text>
+              <!-- 小康标签 -->
+              <rect x="168" y="238" width="64" height="20" rx="10" fill="rgba(255,255,255,0.95)" stroke="rgba(91,184,158,0.3)"/>
+              <text x="200" y="251" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="10" font-weight="600" fill="#3E9A80">小康 · AI 引擎</text>
+
+              <!-- 左上:用户气泡 -->
+              <g class="anim-bubble-in d1">
+                <rect x="28" y="76" width="172" height="50" rx="14" fill="url(#s2UserBubble)" stroke="rgba(232,184,124,0.3)" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.04))"/>
+                <!-- 用户头像:暖色圆角方块 + 人形剪影 -->
+                <rect x="40" y="88" width="28" height="28" rx="8" fill="#FD6585" stroke="#fff" stroke-width="1.5"/>
+                <circle cx="54" cy="98" r="4.5" fill="#fff"/>
+                <path d="M46 111c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#fff"/>
+                <text x="78" y="96" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="#6B7B82">王奶奶</text>
+                <text x="78" y="112" font-family="'Noto Sans SC',sans-serif" font-size="11" font-weight="600" fill="#1F2A2E">小康,我有点头晕</text>
+              </g>
+
+              <!-- 右下:AI 回复气泡 -->
+              <g class="anim-bubble-in d2">
+                <rect x="200" y="248" width="172" height="58" rx="14" fill="url(#s2Avatar)" filter="drop-shadow(0 4px 12px rgba(91,184,158,0.18))"/>
+                <!-- 小康头像:品牌绿圆角方块 + AI 标识 -->
+                <rect x="212" y="260" width="28" height="28" rx="8" fill="#3E9A80" stroke="#fff" stroke-width="1.5"/>
+                <text x="226" y="280" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="800" fill="#fff">AI</text>
+                <text x="248" y="269" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="rgba(255,255,255,0.9)">小康</text>
+                <text x="248" y="284" font-family="'Noto Sans SC',sans-serif" font-size="11" font-weight="600" fill="#fff">王奶奶别急,已帮您</text>
+                <text x="248" y="298" font-family="'Noto Sans SC',sans-serif" font-size="11" font-weight="600" fill="#fff">测血压并通知女儿</text>
+              </g>
+
+              <!-- 底部声波 -->
+              <g transform="translate(140 320)">
+                <rect class="anim-wave" x="0" y="6" width="4" height="20" rx="2" fill="#5BB89E" style="transform-origin:2px 16px"/>
+                <rect class="anim-wave" x="12" y="0" width="4" height="32" rx="2" fill="#6FB1D9" style="transform-origin:14px 16px;animation-delay:.1s"/>
+                <rect class="anim-wave" x="24" y="4" width="4" height="24" rx="2" fill="#E8B87C" style="transform-origin:26px 16px;animation-delay:.2s"/>
+                <rect class="anim-wave" x="36" y="0" width="4" height="32" rx="2" fill="#5BB89E" style="transform-origin:38px 16px;animation-delay:.3s"/>
+                <rect class="anim-wave" x="48" y="6" width="4" height="20" rx="2" fill="#6FB1D9" style="transform-origin:50px 16px;animation-delay:.4s"/>
+                <rect class="anim-wave" x="60" y="2" width="4" height="28" rx="2" fill="#E8B87C" style="transform-origin:62px 16px;animation-delay:.5s"/>
+                <rect class="anim-wave" x="72" y="6" width="4" height="20" rx="2" fill="#5BB89E" style="transform-origin:74px 16px;animation-delay:.6s"/>
+                <rect class="anim-wave" x="84" y="0" width="4" height="32" rx="2" fill="#6FB1D9" style="transform-origin:86px 16px;animation-delay:.7s"/>
+                <rect class="anim-wave" x="96" y="4" width="4" height="24" rx="2" fill="#E8B87C" style="transform-origin:98px 16px;animation-delay:.8s"/>
+                <rect class="anim-wave" x="108" y="6" width="4" height="20" rx="2" fill="#5BB89E" style="transform-origin:110px 16px;animation-delay:.9s"/>
+              </g>
+            </svg>
+            <div class="carousel-caption"><div class="title">AI 智能陪伴 · 小康</div><div class="desc">24h 语音对话 · 主动关怀 · 全链路服务</div></div>
+          </div>
+
+          <!-- ===== Slide 3: AI 家庭关爱网络 ===== -->
+          <div class="carousel-slide" data-slide="2">
+            <svg viewBox="0 0 400 400" fill="none">
+              <defs>
+                <linearGradient id="s3Bg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FFF5F7"/><stop offset="1" stop-color="#FDEEF1"/>
+                </linearGradient>
+                <linearGradient id="s3Center" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FD6585"/><stop offset="1" stop-color="#E0506F"/>
+                </linearGradient>
+                <linearGradient id="s3Line" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#FD6585" stop-opacity="0.6"/><stop offset="1" stop-color="#5BB89E" stop-opacity="0.6"/>
+                </linearGradient>
+                <radialGradient id="s3Glow" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0" stop-color="#FD6585" stop-opacity="0.14"/><stop offset="1" stop-color="#FD6585" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="400" height="400" fill="url(#s3Bg)"/>
+              <!-- 网格 -->
+              <g stroke="#FD6585" stroke-opacity="0.06" stroke-width="1">
+                <path d="M0 100H400M0 200H400M0 300H400"/>
+                <path d="M100 0V400M200 0V400M300 0V400"/>
+              </g>
+
+              <!-- 守护光环 -->
+              <circle class="anim-guardian" cx="200" cy="200" r="140" fill="url(#s3Glow)" style="transform-origin:200px 200px"/>
+              <circle class="anim-guardian" cx="200" cy="200" r="110" fill="none" stroke="rgba(253,101,133,0.15)" stroke-width="1.5" stroke-dasharray="4 6" style="transform-origin:200px 200px;animation-delay:1s"/>
+
+              <!-- 连接线(中心到3个节点) -->
+              <g stroke="url(#s3Line)" stroke-width="2" stroke-dasharray="5 4" fill="none" opacity="0.7">
+                <path d="M200 200L200 80"/>
+                <path d="M200 200L320 200"/>
+                <path d="M200 200L80 200"/>
+              </g>
+              <!-- 数据流动点 -->
+              <circle r="3" fill="#5BB89E">
+                <animateMotion dur="2.5s" repeatCount="indefinite" path="M200 200L200 80"/>
+                <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite"/>
+              </circle>
+              <circle r="3" fill="#6FB1D9">
+                <animateMotion dur="2.5s" repeatCount="indefinite" path="M200 200L320 200" begin="0.6s"/>
+                <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="0.6s"/>
+              </circle>
+              <circle r="3" fill="#FD6585">
+                <animateMotion dur="2.5s" repeatCount="indefinite" path="M200 200L80 200" begin="1.8s"/>
+                <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.8s"/>
+              </circle>
+
+              <!-- 中心:老人标识(圆角方块 + 心形) -->
+              <rect x="156" y="156" width="88" height="88" rx="20" fill="url(#s3Center)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 6px 18px rgba(253,101,133,0.35))"/>
+              <!-- 心形(关爱) -->
+              <path d="M200 188c-6-10-22-10-22 4 0 12 22 22 22 22s22-10 22-22c0-14-16-14-22-4z" fill="#fff" opacity="0.95"/>
+              <rect x="172" y="252" width="56" height="20" rx="10" fill="rgba(255,255,255,0.95)" stroke="rgba(253,101,133,0.3)"/>
+              <text x="200" y="265" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="10" font-weight="600" fill="#E0506F">王奶奶</text>
+
+              <!-- 上节点:女儿 -->
+              <g class="anim-card-in d1">
+                <rect x="174" y="30" width="52" height="52" rx="14" fill="rgba(255,255,255,0.95)" stroke="rgba(91,184,158,0.4)" stroke-width="2"/>
+                <!-- 女儿:心形+人形组合图标 -->
+                <path d="M200 44c-3-5-11-5-11 2 0 6 11 11 11 11s11-5 11-11c0-7-8-7-11-2z" fill="#5BB89E"/>
+                <text x="200" y="98" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="9" font-weight="600" fill="#3E9A80">女儿小芳</text>
+                <circle cx="222" cy="34" r="5" fill="#5BB89E"/>
+                <text x="222" y="37" text-anchor="middle" font-family="Outfit,sans-serif" font-size="6" font-weight="700" fill="#fff">✓</text>
+              </g>
+              <!-- 右节点:家庭医生 -->
+              <g class="anim-card-in d2">
+                <rect x="318" y="174" width="52" height="52" rx="14" fill="rgba(255,255,255,0.95)" stroke="rgba(111,177,217,0.4)" stroke-width="2"/>
+                <!-- 医生:十字医疗图标 -->
+                <path d="M344 186v28M330 200h28" stroke="#6FB1D9" stroke-width="4" stroke-linecap="round"/>
+                <text x="344" y="242" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="9" font-weight="600" fill="#4A8FB5">家庭医生</text>
+                <circle cx="366" cy="178" r="5" fill="#6FB1D9"/>
+                <text x="366" y="181" text-anchor="middle" font-family="Outfit,sans-serif" font-size="6" font-weight="700" fill="#fff">✓</text>
+              </g>
+              <!-- 左节点:智能设备 -->
+              <g class="anim-card-in d4">
+                <rect x="30" y="174" width="52" height="52" rx="14" fill="rgba(255,255,255,0.95)" stroke="rgba(91,184,158,0.4)" stroke-width="2"/>
+                <!-- 智能设备:设备+信号图标 -->
+                <rect x="50" y="190" width="16" height="22" rx="3" fill="none" stroke="#5BB89E" stroke-width="2"/>
+                <circle cx="58" cy="208" r="1.5" fill="#5BB89E"/>
+                <path d="M52 186v-4M64 186v-4M52 184v-2M64 184v-2" stroke="#5BB89E" stroke-width="1.5" stroke-linecap="round"/>
+                <text x="56" y="242" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="9" font-weight="600" fill="#3E9A80">智能设备</text>
+                <circle class="anim-pulse" cx="78" cy="186" r="4" fill="#5BB89E" style="transform-origin:78px 186px"/>
+              </g>
+
+              <!-- 装饰脉冲 -->
+              <circle class="anim-pulse" cx="200" cy="200" r="4" fill="#fff" opacity="0.8" style="transform-origin:200px 200px"/>
+            </svg>
+            <div class="carousel-caption"><div class="title">AI 家庭关爱网络</div><div class="desc">家人 · 医生 · 设备 全方位守护</div></div>
+          </div>
+
+        </div>
+
+        <!-- 箭头 -->
+        <button class="carousel-arrow prev" id="carouselPrev" aria-label="上一张">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="carousel-arrow next" id="carouselNext" aria-label="下一张">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- 指示器 -->
+        <div class="carousel-indicators">
+          <button class="carousel-dot active" data-idx="0" aria-label="第1张"></button>
+          <button class="carousel-dot" data-idx="1" aria-label="第2张"></button>
+          <button class="carousel-dot" data-idx="2" aria-label="第3张"></button>
+        </div>
+      </div>
+
+      <!-- 浮动信息芯片 -->
+      <div class="float-chip c1">
+        <span class="ic" style="background:linear-gradient(135deg,#5BB89E,#3E9A80)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+        AI 健康评分 82
+      </div>
+      <div class="float-chip c2">
+        <span class="ic" style="background:linear-gradient(135deg,#6FB1D9,#4A8FB5)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </span>
+        小康 24h 陪伴
+      </div>
+      <div class="float-chip c3">
+        <span class="ic" style="background:linear-gradient(135deg,#E8B87C,#D09A58)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        家庭关爱网络
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ====== 产品闭环 ====== -->
+<section class="section" id="product">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">完整闭环</span>
+      <h2>从线上到线下，构建完整智慧康养生态</h2>
+      <p class="section-desc">以 AI 微信小程序为主入口，APP 作为完整功能平台，官网作为品牌门户，微信群作为通知运营工具，延伸至智能硬件与线下体验中心。</p>
+    </div>
+    <div class="loop-wrap reveal d1">
+      <div class="loop-chain">
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#5BB89E,#3E9A80)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <h4>官网</h4><p>品牌门户 · 总入口</p>
+          <span class="loop-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#7DCEAF,#5BB89E)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div>
+          <h4>微信小程序</h4><p>主入口 · 低门槛</p>
+          <span class="loop-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#6FB1D9,#4A8FB5)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div>
+          <h4>APP</h4><p>深度功能 · 硬件联动</p>
+          <span class="loop-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#E8B87C,#D09A58)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+          <h4>AI 智能体</h4><p>智能内核 · 主动关怀</p>
+          <span class="loop-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#FD6585,#E0506F)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <h4>智能硬件</h4><p>生态合作 · 全场景守护</p>
+          <span class="loop-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+        <div class="loop-node">
+          <div class="ic" style="background:linear-gradient(135deg,#9CC8E5,#6FB1D9)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <h4>线下体验中心</h4><p>实体触点 · 社区活动</p>
+        </div>
+      </div>
+      <p class="loop-foot">使命：打造一个真正理解老人、陪伴老人、帮助老人、连接家庭的 AI 平台。<br/><strong style="color:var(--brand-dark)">"活到老，学到老，乐到老"</strong> —— 年龄不是界限，科技不是壁垒。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 八大核心模块 ====== -->
+<section class="section" id="modules" style="background:linear-gradient(180deg,transparent,rgba(91,184,158,0.03) 50%,transparent)">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">产品体系</span>
+      <h2>八大核心模块，全方位覆盖中老年人生活</h2>
+      <p class="section-desc">配合八大 AI 引擎，驱动每一个功能场景的智能化体验 —— 从健康管理到社交陪伴，从生活服务到精神慰藉。</p>
+    </div>
+    <div class="modules-grid">
+      <div class="module-card reveal d1">
+        <div class="ic" style="background:linear-gradient(135deg,#5BB89E,#3E9A80)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"/></svg></div>
+        <h4>首页</h4><p>健康画像 · 每日规划 · 快捷入口，一打开就充满阳光</p>
+      </div>
+      <div class="module-card reveal d2">
+        <div class="ic" style="background:linear-gradient(135deg,#6FB1D9,#4A8FB5)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <h4>AI 健康</h4><p>健康画像 · 风险预测 · 问诊 · 预警，预防为主</p>
+      </div>
+      <div class="module-card reveal d3">
+        <div class="ic" style="background:linear-gradient(135deg,#FD6585,#E0506F)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <h4>AI 陪伴</h4><p>数字人 · 陪伴广场 · 心理疏导，温暖不再缺席</p>
+      </div>
+      <div class="module-card reveal d4">
+        <div class="ic" style="background:linear-gradient(135deg,#E8B87C,#D09A58)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <h4>学习中心</h4><p>听书 · 课程 · 名医讲座，活到老学到老</p>
+      </div>
+      <div class="module-card reveal d1">
+        <div class="ic" style="background:linear-gradient(135deg,#7DCEAF,#5BB89E)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h4>社区</h4><p>交友 · 兴趣圈 · 组团养老，建立兴趣圈</p>
+      </div>
+      <div class="module-card reveal d2">
+        <div class="ic" style="background:linear-gradient(135deg,#F6A35C,#E8853A)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <h4>商城</h4><p>康养用品 · 智能设备，严选康养好物</p>
+      </div>
+      <div class="module-card reveal d3">
+        <div class="ic" style="background:linear-gradient(135deg,#9CC8E5,#6FB1D9)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h4>智能设备</h4><p>穿戴 · 机器人 · 智能家居，全场景守护</p>
+      </div>
+      <div class="module-card reveal d4">
+        <div class="ic" style="background:linear-gradient(135deg,#B8E5D4,#7DCEAF)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <h4>个人中心</h4><p>档案 · 记忆库 · 回忆录 · 家庭管理</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 八大 AI 引擎 ====== -->
+<section class="section engines">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">智能内核</span>
+      <h2>八大 AI 引擎，驱动每一个场景的智能化</h2>
+      <p class="section-desc">嵌入八大核心模块之中，从风险预测到回忆录生成，让科技真正理解每一位老人。</p>
+    </div>
+    <div class="engine-grid">
+      <div class="engine-card reveal d1"><div class="num">01</div><h5>AI 家庭</h5><p>家庭关爱网络，让爱不因距离缺席</p></div>
+      <div class="engine-card reveal d2"><div class="num">02</div><h5>AI 风险预测</h5><p>每日评分 · 8大风险，主动预防</p></div>
+      <div class="engine-card reveal d3"><div class="num">03</div><h5>AI 生活规划</h5><p>每日私人秘书，温暖建议</p></div>
+      <div class="engine-card reveal d4"><div class="num">04</div><h5>AI 记忆库</h5><p>数字人生 · 第二大脑</p></div>
+      <div class="engine-card reveal d1"><div class="num">05</div><h5>AI 回忆录</h5><p>家族传承 · 世代记忆</p></div>
+      <div class="engine-card reveal d2"><div class="num">06</div><h5>AI 陪伴广场</h5><p>一起生活 · 一起快乐</p></div>
+      <div class="engine-card reveal d3"><div class="num">07</div><h5>AI 智能管家</h5><p>一句话搞定一切</p></div>
+      <div class="engine-card reveal d4"><div class="num">08</div><h5>AI 健康画像</h5><p>首页一屏全览</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 差异化适老服务 ====== -->
+<section class="section" id="care">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">差异化适老</span>
+      <h2>不是让老人适应产品，而是让产品适配老人</h2>
+      <p class="section-desc">根据身体状况将老人细分为五大类，为每一类量身定制功能侧重点、交互方式与界面方案。</p>
+    </div>
+    <div class="care-grid">
+      <div class="care-card c-1 reveal d1">
+        <span class="tag">活力老人</span>
+        <div><h4>标准模式</h4><div class="age">55-70 岁 · 身体健康</div><div class="focus">社交交友 · 老年课堂 · 运动健身 · 兴趣社团，让退休生活更精彩</div></div>
+        <div class="mode">全功能 · 社交优先</div>
+      </div>
+      <div class="care-card c-2 reveal d2">
+        <span class="tag">高龄老人</span>
+        <div><h4>老人模式</h4><div class="age">70 岁以上 · 机能衰退</div><div class="focus">健康画像 · 吃药提醒 · AI 问诊 · 一键呼叫，减少认知负担</div></div>
+        <div class="mode">大字模式 · 健康提醒</div>
+      </div>
+      <div class="care-card c-3 reveal d3">
+        <span class="tag">卧床老人</span>
+        <div><h4>卧床模式</h4><div class="age">需全天照护 · 无法操作</div><div class="focus">语音交互 · 健康监测 · 翻身提醒 · 紧急呼叫 · 家属报安</div></div>
+        <div class="mode">语音主导 · 极简控制</div>
+      </div>
+      <div class="care-card c-4 reveal d4">
+        <span class="tag">行动不便老人</span>
+        <div><h4>简版模式</h4><div class="age">肢体受限 · 轮椅/助行</div><div class="focus">语音操作 · 上门服务 · 一键购物 · 无障碍导航 · 康复指导</div></div>
+        <div class="mode">简版功能 · 语音辅助</div>
+      </div>
+      <div class="care-card c-5 reveal d5">
+        <span class="tag">视力障碍老人</span>
+        <div><h4>失明模式</h4><div class="age">视力模糊 / 低视力 / 失明</div><div class="focus">全语音交互 · 语音播报 · 声纹识别 · 听书听新闻 · 语音问诊</div></div>
+        <div class="mode">语音优先 · 听觉交互</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 产品亮点 1：AI 智能体对话 ====== -->
+<section class="section" style="background:linear-gradient(180deg,transparent,rgba(111,177,217,0.04) 50%,transparent)">
+  <div class="container">
+    <div class="highlight">
+      <div class="highlight-media reveal">
+        <div class="demo-chat">
+          <div class="chat-bubble user">小康，帮我预约明天协和医院心内科的号。</div>
+          <div class="chat-bubble ai">
+            好的王奶奶！已经帮您预约好了，明天上午 9:30 协和医院心内科张主任的号。
+            <div class="actions">
+              <div class="chat-action"><span class="check">✓</span>已预约挂号（协和医院 · 张主任 · 9:30）</div>
+              <div class="chat-action"><span class="check">✓</span>已叫车：明早 8:30 出发，预计 30 分钟</div>
+              <div class="chat-action"><span class="check">✓</span>已通知女儿小芳，她会陪您一起去</div>
+              <div class="chat-action"><span class="check">✓</span>明早 8:00 叫您起床，8:15 提醒吃药</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-text reveal d1">
+        <span class="section-tag">AI 智能管家 · 小康</span>
+        <h3>叫一声"小康"，一句话搞定一切</h3>
+        <p>小康不是冷冰冰的语音助手，而是有温度的智能管家。它记得王奶奶的习惯、知道她爱去哪个公园、清楚她吃什么药。每一次对话都像和老朋友说话。</p>
+        <ul class="highlight-list">
+          <li><span class="check">✓</span><span><strong>一句话搞定：</strong>语音指令，自然语言理解，不用学怎么操作</span></li>
+          <li><span class="check">✓</span><span><strong>全链路打通：</strong>预约 → 导航 → 打车 → 提醒 → 通知子女，一条龙服务</span></li>
+          <li><span class="check">✓</span><span><strong>家庭联动：</strong>自动通知子女，同步行程安排，全家安心</span></li>
+          <li><span class="check">✓</span><span><strong>主动提醒：</strong>从叫起床到吃药，全程贴心陪伴</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 产品亮点 2：AI 健康风险预测 ====== -->
+<section class="section">
+  <div class="container">
+    <div class="highlight reverse">
+      <div class="highlight-media reveal">
+        <div class="health-ring">
+          <div class="ring-wrap">
+            <svg class="ring-svg" width="160" height="160" viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#5BB89E"/><stop offset="1" stop-color="#6FB1D9"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="80" cy="80" r="70"/>
+              <circle class="ring-fill" cx="80" cy="80" r="70"/>
+            </svg>
+            <div class="ring-center"><div class="v">82</div><div class="l">健康指数</div></div>
+          </div>
+          <div class="risk-list">
+            <div class="risk-row"><span class="name">跌倒风险</span><span class="lvl low">低 · 92分</span></div>
+            <div class="risk-row"><span class="name">睡眠风险</span><span class="lvl low">低 · 95分</span></div>
+            <div class="risk-row"><span class="name">高血压风险</span><span class="lvl mid">关注 · 75分</span></div>
+            <div class="risk-row"><span class="name">中风风险</span><span class="lvl high">偏高 · 68分</span></div>
+          </div>
+        </div>
+        <p style="text-align:center;margin-top:20px;font-family:var(--font-sc);color:var(--muted);font-size:.88rem">每天清晨，AI 综合分析睡眠、运动、血压、心率、情绪等数据，为老人生成健康评分与风险预测报告。</p>
+      </div>
+      <div class="highlight-text reveal d1">
+        <span class="section-tag">AI 风险预测</span>
+        <h3>每日 AI 评分，提前预测 8 大风险</h3>
+        <p>从被动治疗到主动预防，让危险止于未然。风险评分不是冰冷的数字，当某项风险偏高时，AI 会用温暖的语气建议：</p>
+        <p style="background:rgba(91,184,158,0.08);border-left:3px solid var(--brand);padding:16px 20px;border-radius:0 12px 12px 0;font-family:var(--font-sc);color:var(--ink-2);font-style:italic">"王奶奶，今天血压有点高，咱们少吃点咸的，下午去公园散散步好不好？" —— 不是警报，而是老伴般的叮咛。</p>
+        <ul class="highlight-list">
+          <li><span class="check">✓</span><span>每日健康评分同步子女端，风险升高自动预警</span></li>
+          <li><span class="check">✓</span><span>跌倒、阿尔兹海默、中风等 8 维风险全方位评估</span></li>
+          <li><span class="check">✓</span><span>个性化健康改善建议，温暖而非冰冷</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 下载引导 ====== -->
+<section class="section" id="download">
+  <div class="container">
+    <div class="download reveal">
+      <div class="download-grid">
+        <div class="download-text">
+          <h2>立即体验，让科技温暖家人</h2>
+          <p>微信小程序零下载门槛，中老年人最熟悉的操作环境；APP 提供完整功能，支持子女端远程管理与硬件联动。</p>
+          <ul class="download-features">
+            <li><span class="check">✓</span>基础功能永久免费，确保所有老人都能用上、用得起</li>
+            <li><span class="check">✓</span>大字体大按钮设计，AI 语音交互，零学习门槛</li>
+            <li><span class="check">✓</span>子女远程关注父母健康，家庭关爱网络</li>
+            <li><span class="check">✓</span>数据加密存储，等保三级认证，隐私安全有保障</li>
+          </ul>
+          <div class="download-cta">
+            <a href="#" class="btn btn-white btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              下载 APP
+            </a>
+            <a href="#contact" class="btn btn-outline-w btn-lg">合作咨询</a>
+          </div>
+        </div>
+        <div class="qr-cards">
+          <div class="qr-card">
+            <div class="qr-img">
+              <svg viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg">
+                <rect width="148" height="148" fill="#fff"/>
+                <g fill="#1F2A2E">
+                  <!-- 模拟二维码图案 -->
+                  <rect x="8" y="8" width="32" height="32" rx="4"/><rect x="16" y="16" width="16" height="16" fill="#fff"/><rect x="20" y="20" width="8" height="8"/>
+                  <rect x="108" y="8" width="32" height="32" rx="4"/><rect x="116" y="16" width="16" height="16" fill="#fff"/><rect x="120" y="20" width="8" height="8"/>
+                  <rect x="8" y="108" width="32" height="32" rx="4"/><rect x="16" y="116" width="16" height="16" fill="#fff"/><rect x="20" y="120" width="8" height="8"/>
+                  <rect x="48" y="8" width="8" height="8"/><rect x="64" y="8" width="8" height="8"/><rect x="80" y="8" width="8" height="8"/>
+                  <rect x="48" y="24" width="8" height="8"/><rect x="72" y="24" width="8" height="8"/><rect x="88" y="24" width="8" height="8"/>
+                  <rect x="8" y="48" width="8" height="8"/><rect x="24" y="48" width="8" height="8"/><rect x="48" y="48" width="16" height="16"/><rect x="72" y="48" width="8" height="8"/><rect x="88" y="48" width="16" height="16"/><rect x="112" y="48" width="8" height="8"/><rect x="128" y="48" width="8" height="8"/>
+                  <rect x="8" y="64" width="8" height="8"/><rect x="32" y="64" width="8" height="8"/><rect x="48" y="64" width="8" height="8"/><rect x="72" y="64" width="16" height="16"/><rect x="96" y="64" width="8" height="8"/><rect x="120" y="64" width="8" height="8"/><rect x="132" y="64" width="8" height="8"/>
+                  <rect x="16" y="80" width="8" height="8"/><rect x="40" y="80" width="16" height="16"/><rect x="64" y="80" width="8" height="8"/><rect x="88" y="80" width="8" height="8"/><rect x="104" y="80" width="16" height="16"/><rect x="128" y="80" width="8" height="8"/>
+                  <rect x="8" y="96" width="8" height="8"/><rect x="24" y="96" width="8" height="8"/><rect x="48" y="96" width="8" height="8"/><rect x="72" y="96" width="8" height="8"/><rect x="96" y="96" width="16" height="16"/><rect x="120" y="96" width="8" height="8"/><rect x="132" y="96" width="8" height="8"/>
+                  <rect x="48" y="112" width="8" height="8"/><rect x="64" y="112" width="16" height="16"/><rect x="88" y="112" width="8" height="8"/><rect x="112" y="112" width="8" height="8"/><rect x="128" y="112" width="8" height="8"/>
+                  <rect x="48" y="128" width="8" height="8"/><rect x="72" y="128" width="8" height="8"/><rect x="88" y="128" width="8" height="8"/><rect x="112" y="128" width="8" height="8"/><rect x="132" y="128" width="8" height="8"/>
+                </g>
+                <circle cx="74" cy="74" r="18" fill="#5BB89E"/>
+                <path d="M74 64c-2 -4 -8 -6 -8 -12 c0 -4 3 -6 5 -6 c2 0 3 1 3 2 c0 -1 1 -2 3 -2 c2 0 5 2 5 6 c0 6 -6 8 -8 12z" fill="#fff"/>
+              </svg>
+            </div>
+            <h4>微信小程序</h4><p>扫码即用 · 主入口</p>
+          </div>
+          <div class="qr-card">
+            <div class="qr-img">
+              <svg viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg">
+                <rect width="148" height="148" fill="#fff"/>
+                <g fill="#1F2A2E">
+                  <rect x="8" y="8" width="32" height="32" rx="4"/><rect x="16" y="16" width="16" height="16" fill="#fff"/><rect x="20" y="20" width="8" height="8"/>
+                  <rect x="108" y="8" width="32" height="32" rx="4"/><rect x="116" y="16" width="16" height="16" fill="#fff"/><rect x="120" y="20" width="8" height="8"/>
+                  <rect x="8" y="108" width="32" height="32" rx="4"/><rect x="16" y="116" width="16" height="16" fill="#fff"/><rect x="20" y="120" width="8" height="8"/>
+                  <rect x="56" y="8" width="8" height="8"/><rect x="72" y="8" width="8" height="8"/><rect x="88" y="8" width="8" height="8"/>
+                  <rect x="56" y="24" width="8" height="8"/><rect x="80" y="24" width="8" height="8"/>
+                  <rect x="8" y="56" width="8" height="8"/><rect x="32" y="56" width="8" height="8"/><rect x="56" y="56" width="16" height="16"/><rect x="80" y="56" width="8" height="8"/><rect x="104" y="56" width="16" height="16"/><rect x="128" y="56" width="8" height="8"/>
+                  <rect x="16" y="72" width="8" height="8"/><rect x="40" y="72" width="8" height="8"/><rect x="64" y="72" width="8" height="8"/><rect x="88" y="72" width="16" height="16"/><rect x="112" y="72" width="8" height="8"/><rect x="132" y="72" width="8" height="8"/>
+                  <rect x="8" y="88" width="8" height="8"/><rect x="32" y="88" width="16" height="16"/><rect x="56" y="88" width="8" height="8"/><rect x="80" y="88" width="8" height="8"/><rect x="104" y="88" width="8" height="8"/><rect x="128" y="88" width="8" height="8"/>
+                  <rect x="16" y="104" width="8" height="8"/><rect x="40" y="104" width="8" height="8"/><rect x="56" y="104" width="16" height="16"/><rect x="80" y="104" width="8" height="8"/><rect x="104" y="104" width="8" height="8"/><rect x="120" y="104" width="8" height="8"/><rect x="132" y="104" width="8" height="8"/>
+                  <rect x="56" y="120" width="8" height="8"/><rect x="72" y="120" width="16" height="16"/><rect x="96" y="120" width="8" height="8"/><rect x="120" y="120" width="8" height="8"/><rect x="132" y="120" width="8" height="8"/>
+                </g>
+                <circle cx="74" cy="74" r="18" fill="#6FB1D9"/>
+                <rect x="68" y="68" width="12" height="12" rx="2" fill="#fff"/>
+              </svg>
+            </div>
+            <h4>APP 下载</h4><p>iOS · Android · 完整功能</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 公益计划 ====== -->
+<section class="section" id="charity">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">公益初心</span>
+      <h2>科技向善，让科技温暖每一位中老年人</h2>
+      <p class="section-desc">生命树 AI 不仅是一款产品，更是一份社会责任。公益初心 + 增值服务 + 生态合作，实现社会价值与可持续发展并行。</p>
+    </div>
+    <div class="charity-grid">
+      <div class="charity-card reveal d1">
+        <div class="ic" style="background:linear-gradient(135deg,#5BB89E,#3E9A80)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <h4>基础功能永久免费</h4>
+        <p>健康档案、AI 陪伴对话、吃药提醒、社区交友、老年课堂等核心功能永久免费，确保所有老人都能用上、用得起。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>公益属性 · 覆盖最广人群</div>
+      </div>
+      <div class="charity-card reveal d2">
+        <div class="ic" style="background:linear-gradient(135deg,#6FB1D9,#4A8FB5)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <h4>困难老人帮扶计划</h4>
+        <p>与政府民政部门合作，为困难老人提供免费增值服务。联合社区、公益组织，将 AI 助老服务延伸至最需要的群体。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>政企合作 · 精准帮扶</div>
+      </div>
+      <div class="charity-card reveal d3">
+        <div class="ic" style="background:linear-gradient(135deg,#E8B87C,#D09A58)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+        <h4>数字鸿沟弥合行动</h4>
+        <p>通过十种多模式 UI 与 AI 语音交互，让不会用智能手机的老人也能享受数字服务。活到老学到老，帮助中老年人跟上时代步伐。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>教育赋能 · 终身学习</div>
+      </div>
+      <div class="charity-card reveal d1">
+        <div class="ic" style="background:linear-gradient(135deg,#FD6585,#E0506F)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h4>社区关爱网络</h4>
+        <p>连接社区、志愿者、家庭，构建多层关爱网络。独居老人异常自动告警，社区志愿者定期上门关怀，让温暖不再缺席。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>社区共建 · 志愿服务</div>
+      </div>
+      <div class="charity-card reveal d2">
+        <div class="ic" style="background:linear-gradient(135deg,#7DCEAF,#5BB89E)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h4>银发就业岗位</h4>
+        <p>创造陪诊师、健康顾问、老年课堂讲师等就业岗位，激活银发经济生态。让有经验的老人发挥余热，促进社会就业。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>银发经济 · 创造就业</div>
+      </div>
+      <div class="charity-card reveal d3">
+        <div class="ic" style="background:linear-gradient(135deg,#9CC8E5,#6FB1D9)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <h4>线下体验中心</h4>
+        <p>在重点城市设立体验中心，提供免费健康检测、产品体验、社交活动。作为产品体验与社区活动的实体触点，温暖驿站就在身边。</p>
+        <div class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>实体触点 · 免费服务</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 合作咨询 ====== -->
+<section class="section contact" id="contact">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">合作共赢</span>
+      <h2>携手共建智慧助老生态</h2>
+      <p class="section-desc">无论您是硬件厂商、医疗机构、社区组织还是投资人，我们都期待与您一起，让科技的温度温暖每一个家庭。</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        <h3>多种合作方式，共建智慧康养未来</h3>
+        <p>生命树 AI 以开放平台能力，与政府、医院、社区、硬件厂商共建智慧养老服务体系。生态合作优先，务实推进。</p>
+        <div class="contact-list">
+          <div class="contact-item">
+            <div class="ic" style="background:linear-gradient(135deg,#5BB89E,#3E9A80)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div><h5>硬件生态合作</h5><p>穿戴设备 · 智能家居 · 健康监测设备</p></div>
+          </div>
+          <div class="contact-item">
+            <div class="ic" style="background:linear-gradient(135deg,#6FB1D9,#4A8FB5)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <div><h5>医疗机构合作</h5><p>家庭医生签约 · 在线问诊 · 数据对接</p></div>
+          </div>
+          <div class="contact-item">
+            <div class="ic" style="background:linear-gradient(135deg,#E8B87C,#D09A58)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <div><h5>社区政府合作</h5><p>街道社区服务站点 · 民政部门帮扶</p></div>
+          </div>
+          <div class="contact-item">
+            <div class="ic" style="background:linear-gradient(135deg,#FD6585,#E0506F)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div><h5>投资合作</h5><p>战略投资 · 生态共建 · 业务拓展</p></div>
+          </div>
+        </div>
+      </div>
+      <form class="contact-form reveal d1" onsubmit="handleSubmit(event)">
+        <div class="form-title">合作咨询表单</div>
+        <div class="form-sub">提交后我们将在 1 个工作日内与您联系</div>
+        <div class="form-row">
+          <div class="form-group"><label>姓名</label><input type="text" placeholder="您的称呼" required /></div>
+          <div class="form-group"><label>机构</label><input type="text" placeholder="公司/组织名称" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>手机号</label><input type="tel" placeholder="联系电话" required /></div>
+          <div class="form-group"><label>邮箱</label><input type="email" placeholder="电子邮箱" /></div>
+        </div>
+        <div class="form-group">
+          <label>合作类型</label>
+          <select>
+            <option>硬件生态合作</option>
+            <option>医疗机构合作</option>
+            <option>社区政府合作</option>
+            <option>投资合作</option>
+            <option>内容合作（课程/讲座）</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div class="form-group"><label>合作意向</label><textarea placeholder="简要描述您的合作意向与需求..."></textarea></div>
+        <button type="submit" class="btn btn-primary btn-lg form-submit">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          提交咨询
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 页脚 ====== -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#top" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12c0-4 2-7 6-7 0 4-2 7-6 7z"/><path d="M12 12c0-4-2-7-6-7 0 4 2 7 6 7z"/></svg></span>
+        生命树<span>AI</span>
+      </a>
+      <p>用 AI 更人性化地助老爱老 —— 打造中国乃至全球最大的 AI 智慧康养平台。让每一位中老年人被理解、被陪伴、被守护。</p>
+      <div class="footer-social">
+        <a href="#" aria-label="微信"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8.5 4C4.36 4 1 6.69 1 10c0 1.89 1.08 3.56 2.78 4.66L3 17l2.5-1.32c.96.27 1.96.42 3 .42.26 0 .51-.01.76-.03C9.13 15.05 9 14.79 9 14.5c0-2.99 3.36-5.5 7.5-5.5.26 0 .51.01.76.03C16.41 5.97 12.81 4 8.5 4zM6 9.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm5 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/><path d="M23 14.5C23 11.46 19.97 9 16.5 9S10 11.46 10 14.5 13.03 20 16.5 20c.86 0 1.69-.13 2.46-.37L21 21l-.66-1.92C21.96 18.18 23 16.45 23 14.5zm-7 0c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75zm4 0c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75z"/></svg></a>
+        <a href="#" aria-label="微博"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9.31 8.17c-3.46.86-6.04 3.24-6.04 6.04 0 3.59 4.61 6.5 10.29 6.5 5.69 0 10.29-2.91 10.29-6.5 0-3.59-4.61-6.5-10.29-6.5-.86 0-1.69.08-2.49.23m1.49 9.06c-2.99.29-5.57-.95-5.76-2.78-.19-1.83 2.07-3.55 5.06-3.85 2.99-.29 5.57.95 5.76 2.78.19 1.83-2.07 3.55-5.06 3.85z"/><path d="M17.13 6.97c-.47-.13-.79-.2-.55-.74.53-1.18.06-2.13-.94-2.13-1.18 0-2.13 1.18-2.13 1.18s.42.16.61.53c.39.71.06 1.42-.94 1.42-1 0-1.42-.71-1.42-.71s-1.71.16-1.71 1.97c0 1.18 1.18 1.97 1.18 1.97s.16-.42.79-.42c.63 0 1.18.42 1.18.42s1.18-.16 1.18-1.18c0-1.02 1.18-1.18 1.18-1.18s1.18.16 1.18 1.18c0 1.02-.79 1.18-.79 1.18s.42.79 1.42.79c1 0 1.42-.79 1.42-.79s1.18-.16 1.18-1.18c0-.55-.26-.93-.55-1.18-.29-.26-.06-.42.16-.55.21-.13.34-.05.34-.05z"/></svg></a>
+        <a href="#" aria-label="抖音"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16 8.245C16 9.073 16.672 9.745 17.5 9.745C18.328 9.745 19 9.073 19 8.245V4.5C19 3.672 18.328 3 17.5 3H13.5C12.672 3 12 3.672 12 4.5V16C12 17.105 11.105 18 10 18S8 17.105 8 16 8.895 14 10 14V11C8.343 11 7 12.343 7 14S8.343 17 10 17 13 15.657 13 14V9.5C13 8.948 13.448 8.5 14 8.5H15C15.552 8.5 16 8.948 16 9.5V8.245Z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>产品</h5>
+      <a href="#product">产品介绍</a>
+      <a href="#modules">核心模块</a>
+      <a href="#care">适老方案</a>
+      <a href="#download">下载体验</a>
+    </div>
+    <div class="footer-col">
+      <h5>关于</h5>
+      <a href="#charity">公益计划</a>
+      <a href="#contact">合作咨询</a>
+      <a href="#">加入我们</a>
+      <a href="#">新闻动态</a>
+    </div>
+    <div class="footer-col">
+      <h5>联系</h5>
+      <a href="#">contact@lifetree-ai.com</a>
+      <a href="#">400-888-XXXX</a>
+      <a href="#">商务合作</a>
+      <a href="#">媒体报道</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 生命树 AI · LifeTree AI — 智慧生命管理平台</span>
+    <span>用 AI 更人性化地助老爱老 · 活到老，学到老，乐到老</span>
+  </div>
+</footer>
+
+<script>
+// 导航栏滚动效果
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 30) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
+
+// 移动端菜单
+const navToggle = document.getElementById('navToggle');
+const navLinks = document.getElementById('navLinks');
+navToggle?.addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+// 滚动入场动画
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ====== Hero 轮播 ======
+(function(){
+  const carousel = document.getElementById('heroCarousel');
+  if (!carousel) return;
+  const slides = carousel.querySelectorAll('.carousel-slide');
+  const dots = carousel.querySelectorAll('.carousel-dot');
+  const prev = document.getElementById('carouselPrev');
+  const next = document.getElementById('carouselNext');
+  const progress = document.getElementById('carouselProgress');
+  const DURATION = 2000; // 每张停留 2 秒
+  let current = 0;
+  let timer = null;
+  let progressRAF = null;
+  let progressStart = 0;
+  let isPaused = false;
+
+  function setActive(idx) {
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    current = idx;
+    // 重置内部动画:通过强制 reflow 触发动画重新播放
+    const active = slides[idx];
+    active.querySelectorAll('[class*="anim-"]').forEach(el => {
+      const cs = el.style.animation;
+      el.style.animation = 'none';
+      // 强制 reflow
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+    restartProgress();
+  }
+
+  function goTo(idx) { setActive((idx + slides.length) % slides.length); }
+  function goNext() { goTo(current + 1); }
+  function goPrev() { goTo(current - 1); }
+
+  function restartProgress() {
+    cancelAnimationFrame(progressRAF);
+    progress.style.width = '0%';
+    progressStart = performance.now();
+    tickProgress();
+  }
+
+  function tickProgress() {
+    if (isPaused) {
+      progressRAF = requestAnimationFrame(tickProgress);
+      return;
+    }
+    const elapsed = performance.now() - progressStart;
+    const pct = Math.min(100, (elapsed / DURATION) * 100);
+    progress.style.width = pct + '%';
+    if (pct >= 100) {
+      goNext();
+      return;
+    }
+    progressRAF = requestAnimationFrame(tickProgress);
+  }
+
+  function startAuto() {
+    isPaused = false;
+    restartProgress();
+  }
+  function pauseAuto() {
+    isPaused = true;
+  }
+  function resumeAuto() {
+    // 续接进度:调整 start 使剩余时间与暂停时一致
+    const curPct = parseFloat(progress.style.width) || 0;
+    progressStart = performance.now() - (curPct / 100) * DURATION;
+    isPaused = false;
+  }
+
+  // 事件绑定
+  next?.addEventListener('click', () => { goNext(); startAuto(); });
+  prev?.addEventListener('click', () => { goPrev(); startAuto(); });
+  dots.forEach(d => d.addEventListener('click', () => {
+    const idx = parseInt(d.dataset.idx, 10);
+    goTo(idx); startAuto();
+  }));
+
+  // 悬停暂停
+  carousel.addEventListener('mouseenter', pauseAuto);
+  carousel.addEventListener('mouseleave', resumeAuto);
+
+  // 触摸滑动
+  let touchStartX = 0;
+  carousel.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; pauseAuto(); }, { passive: true });
+  carousel.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) { dx < 0 ? goNext() : goPrev(); startAuto(); }
+    else { resumeAuto(); }
+  });
+
+  // 键盘控制
+  carousel.tabIndex = 0;
+  carousel.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { goPrev(); startAuto(); }
+    if (e.key === 'ArrowRight') { goNext(); startAuto(); }
+  });
+
+  // 页面不可见时暂停
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseAuto();
+    else resumeAuto();
+  });
+
+  // 启动
+  startAuto();
+})();
+
+// 表单提交
+function handleSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.form-submit');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>提交成功，我们将尽快联系您';
+  btn.style.background = 'linear-gradient(135deg,#3E9A80,#2D7A64)';
+  setTimeout(() => { btn.innerHTML = original; btn.style.background = ''; e.target.reset(); }, 3000);
+}
+</script>
+</body>
+</html>

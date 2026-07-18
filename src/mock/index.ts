@@ -1084,6 +1084,7 @@ export const loginAccounts = {
     phone: '138 0000 6868',
     phonePlain: '13800006868',
     smsCode: '686868',
+    username: 'wangxiulan',
     password: 'lifetree2026',
     name: '王秀兰',
     avatar: 'circle-user',
