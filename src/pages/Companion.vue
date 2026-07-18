@@ -509,19 +509,24 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: var(--space-4);
 }
 .ability-dialog {
   width: 100%;
   max-width: 430px;
   background: var(--color-surface-solid);
-  border-radius: 24px 24px 0 0;
+  border-radius: 24px;
   padding: var(--space-5) var(--space-5) var(--space-6);
   box-shadow: var(--shadow-float);
-  animation: slide-up 0.3s ease-out;
+  animation: ability-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 85vh;
   overflow-y: auto;
+}
+@keyframes ability-fade-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 .ability-dialog-head {
   display: flex;

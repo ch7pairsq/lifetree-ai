@@ -5087,23 +5087,24 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: var(--space-4);
 }
 .alert-center-dialog {
   width: 100%;
   max-width: 430px;
   max-height: 85vh;
   background: #F5F6FA;
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: alertFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+@keyframes alertFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 .alert-center-dialog-head {
   display: flex;

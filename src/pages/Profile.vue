@@ -276,6 +276,41 @@ function openInfoDialog(title: string, msg: string) {
       </div>
     </div>
 
+    <!-- 生命树官网入口 -->
+    <div class="official-section">
+      <a class="official-card" @click="openOfficialWebsite">
+        <span class="official-logo">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="13" r="8" fill="url(#offCrownCare)" />
+            <circle cx="12" cy="19" r="5.5" fill="url(#offCrownCare)" opacity="0.85" />
+            <circle cx="28" cy="19" r="5.5" fill="url(#offCrownCare)" opacity="0.85" />
+            <path d="M18 21 L18 33 L22 33 L22 21 Z" fill="#3E9A80" />
+            <path d="M13 33 Q20 35.5 27 33" stroke="#3E9A80" stroke-width="2" fill="none" stroke-linecap="round" />
+            <path d="M20 8.5 C18.8 7 16.8 7.5 16.8 9.5 C16.8 11.2 20 13 20 13 C20 13 23.2 11.2 23.2 9.5 C23.2 7.5 21.2 7 20 8.5 Z" fill="#fff" opacity="0.92" />
+            <defs>
+              <linearGradient id="offCrownCare" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7DCEAF" />
+                <stop offset="100%" stop-color="#3E9A80" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="official-info">
+          <span class="official-title">生命树官网</span>
+          <span class="official-desc">了解产品 · 合作咨询 · 公益计划</span>
+        </span>
+        <span class="official-arrow"><AppIcon name="link" :size="18" color="var(--color-brand-dark)" /></span>
+      </a>
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="logout-section">
+      <button class="logout-btn" @click="handleLogout">
+        <AppIcon name="log-out" :size="18" color="var(--state-error)" />
+        <span>退出登录</span>
+      </button>
+    </div>
+
     <div class="bottom-space"></div>
   </div>
 
@@ -383,6 +418,41 @@ function openInfoDialog(title: string, msg: string) {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 生命树官网入口 -->
+    <div class="official-section">
+      <a class="official-card" @click="openOfficialWebsite">
+        <span class="official-logo">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="13" r="8" fill="url(#offCrownDaughter)" />
+            <circle cx="12" cy="19" r="5.5" fill="url(#offCrownDaughter)" opacity="0.85" />
+            <circle cx="28" cy="19" r="5.5" fill="url(#offCrownDaughter)" opacity="0.85" />
+            <path d="M18 21 L18 33 L22 33 L22 21 Z" fill="#3E9A80" />
+            <path d="M13 33 Q20 35.5 27 33" stroke="#3E9A80" stroke-width="2" fill="none" stroke-linecap="round" />
+            <path d="M20 8.5 C18.8 7 16.8 7.5 16.8 9.5 C16.8 11.2 20 13 20 13 C20 13 23.2 11.2 23.2 9.5 C23.2 7.5 21.2 7 20 8.5 Z" fill="#fff" opacity="0.92" />
+            <defs>
+              <linearGradient id="offCrownDaughter" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7DCEAF" />
+                <stop offset="100%" stop-color="#3E9A80" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="official-info">
+          <span class="official-title">生命树官网</span>
+          <span class="official-desc">了解产品 · 合作咨询 · 公益计划</span>
+        </span>
+        <span class="official-arrow"><AppIcon name="link" :size="18" color="var(--color-brand-dark)" /></span>
+      </a>
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="logout-section">
+      <button class="logout-btn" @click="handleLogout">
+        <AppIcon name="log-out" :size="18" color="var(--state-error)" />
+        <span>退出登录</span>
+      </button>
     </div>
 
     <div class="bottom-space"></div>
