@@ -26,6 +26,9 @@ watch(
 // 当前模式 key（用于 data-mode 属性）
 const modeKey = computed(() => userStore.activeModeKey)
 
+// 登录等全屏页面：隐藏 AppHeader / 导航 / 悬浮小康
+const hideChrome = computed(() => route.meta.hideChrome === true)
+
 // 导航组件
 const navComp = computed(() => {
   switch (userStore.activeMode.navStyle) {
@@ -46,9 +49,9 @@ const navComp = computed(() => {
 </script>
 
 <template>
-  <div class="app-container" :data-mode="modeKey">
-    <AppHeader />
-    <main class="app-main" :class="`layout-${userStore.activeMode.layout}`">
+  <div class="app-container" :data-mode="modeKey" :class="{ 'chrome-hidden': hideChrome }">
+    <AppHeader v-if="!hideChrome" />
+    <main class="app-main" :class="[`layout-${userStore.activeMode.layout}`, { 'no-chrome': hideChrome }]">
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
@@ -56,10 +59,10 @@ const navComp = computed(() => {
       </router-view>
     </main>
     <!-- 根据模式渲染不同导航 -->
-    <component :is="navComp" />
+    <component :is="navComp" v-if="!hideChrome" />
 
-    <!-- 小康悬浮框（所有界面悬浮） -->
-    <FloatingCompanion />
+    <!-- 小康悬浮框（非登录页悬浮） -->
+    <FloatingCompanion v-if="!hideChrome" />
   </div>
 </template>
 
@@ -76,6 +79,11 @@ const navComp = computed(() => {
   padding-top: 56px;
   padding-bottom: 64px;
   min-height: 100vh;
+}
+/* 登录等全屏页面：移除顶部/底部留白 */
+.app-main.no-chrome {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* 路由切换动画 */

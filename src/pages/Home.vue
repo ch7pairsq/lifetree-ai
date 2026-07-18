@@ -1097,21 +1097,31 @@ function openFeatureDialog(title: string, content: string, icon: string) {
 
     <!-- ==================== 轮椅模式 ==================== -->
     <template v-else-if="userStore.isWheelchair">
-      <section class="wc-greeting">
-        <h1 class="wc-hello">{{ greeting.title }}</h1>
-        <p class="wc-sub">{{ greeting.weatherText }} {{ greeting.temp }} · 空气{{ greeting.airQuality }}</p>
-      </section>
-
-      <!-- 语音操作 + 紧急求助 -->
-      <section class="wc-action-row">
-        <button class="wc-action-btn voice" @click="goRoute('/companion')">
-          <AppIcon name="mic" :size="28" :color="'#fff'" />
-          <span class="wc-action-text">语音操作</span>
-        </button>
-        <button class="wc-action-btn danger" @click="showAlert('正在呼叫紧急联系人...')">
-          <AppIcon name="siren" :size="28" :color="'#fff'" />
-          <span class="wc-action-text">紧急求助</span>
-        </button>
+      <section class="wc-greeting-card">
+        <div class="wc-greeting-top">
+          <div class="wc-greeting-left">
+            <h1 class="wc-greeting-title">{{ greeting.title }}</h1>
+            <p class="wc-greeting-sub">{{ greeting.subtitle }}</p>
+          </div>
+          <div class="wc-greeting-right">
+            <div class="wc-greeting-date">
+              <AppIcon name="sun" :size="18" color="#fff" />
+              <span>{{ greeting.date }}</span>
+            </div>
+            <div class="wc-greeting-lunar">农历 {{ greeting.lunar }}</div>
+          </div>
+        </div>
+        <div class="wc-greeting-info">
+          <div class="wc-info-item">
+            <AppIcon name="thermometer" :size="16" color="#fff" />
+            <span>气温 {{ greeting.temp }}</span>
+          </div>
+          <div class="wc-info-divider"></div>
+          <div class="wc-info-item">
+            <AppIcon name="clock" :size="16" color="#fff" />
+            <span>{{ greeting.currentTime }}</span>
+          </div>
+        </div>
       </section>
 
       <!-- 今日健康小贴士 -->
@@ -3853,15 +3863,100 @@ function openFeatureDialog(title: string, content: string, icon: string) {
 
 /* ============ 轮椅模式 ============ */
 .home-wheelchair { padding: 0 var(--space-4); }
-.wc-greeting { margin: var(--space-4) 0; }
-.wc-hello { font-size: 1.4rem; font-weight: 700; color: var(--color-text-primary); }
-.wc-sub { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: var(--space-1); }
-.wc-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
-.wc-action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-4); min-height: 90px; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.wc-action-btn:active { transform: scale(0.96); }
-.wc-action-btn.voice { background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); color: #fff; box-shadow: 0 4px 16px rgba(91,184,158,0.3); }
-.wc-action-btn.danger { background: linear-gradient(135deg, var(--state-error), #B85555); color: #fff; box-shadow: 0 4px 16px rgba(212,107,107,0.3); }
-.wc-action-text { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; }
+.wc-greeting-card {
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #5BB89E, #4A9E8A);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(91, 184, 158, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+.wc-greeting-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+.wc-greeting-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  left: -5%;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+}
+.wc-greeting-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+.wc-greeting-left { flex: 1; }
+.wc-greeting-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 var(--space-1);
+}
+.wc-greeting-sub {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+.wc-greeting-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.wc-greeting-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #fff;
+}
+.wc-greeting-lunar {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 2px;
+}
+.wc-greeting-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+.wc-info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #fff;
+}
+.wc-info-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
 .wc-section-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-3); }
 .wc-tip { margin-bottom: var(--space-6); }
 .wc-tip-card { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(246,163,92,0.08), rgba(232,184,124,0.05)); border: 1px solid rgba(246,163,92,0.2); }

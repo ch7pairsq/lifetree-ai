@@ -1069,4 +1069,43 @@ export const wheelchairRehabGuide = [
     steps: ['踝关节屈伸 3分钟', '膝关节屈伸 3分钟', '髋关节外展 2分钟', '按摩放松 2分钟'] },
 ]
 
+// ===== 登录页模拟数据 =====
+// 模拟账号：王秀兰（默认账号）
+export const loginAccounts = {
+  // 验证码登录：手机号 + 验证码
+  phoneAccount: {
+    phone: '138 0000 6868',
+    phonePlain: '13800006868',
+    smsCode: '686868',
+    password: 'lifetree2026',
+  },
+  // 一键带入模拟数据：可填充到表单中点击登录
+  demoAccount: {
+    phone: '138 0000 6868',
+    phonePlain: '13800006868',
+    smsCode: '686868',
+    password: 'lifetree2026',
+    name: '王秀兰',
+    avatar: 'circle-user',
+    memberLevel: '黄金树',
+  },
+}
+
+// 第三方登录方式
+export const thirdPartyLogins = [
+  { id: 'wechat', name: '微信', icon: 'message-circle', color: '#09BB07' },
+  { id: 'alipay', name: '支付宝', icon: 'wallet', color: '#1677FF' },
+  { id: 'qq', name: 'QQ', icon: 'message-square', color: '#12B7F5' },
+  { id: 'apple', name: 'Apple', icon: 'apple', color: '#000000' },
+]
+
+// 登录页协议
+export const loginAgreements = {
+  title: '用户协议与隐私政策',
+  items: [
+    { id: 'user', name: '《用户协议》', desc: '了解我们的服务条款与使用规范' },
+    { id: 'privacy', name: '《隐私政策》', desc: '我们严格保护您的个人信息与隐私' },
+  ],
+}
+
 

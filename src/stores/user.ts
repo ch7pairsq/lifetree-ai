@@ -127,6 +127,10 @@ export const useUserStore = defineStore('user', () => {
   const selectedMood = ref<string | null>(null)
   const medReminderOn = ref(true)
 
+  // 登录态（从 localStorage 恢复）
+  const savedLogin = typeof localStorage !== 'undefined' ? localStorage.getItem('zz_logged_in') : null
+  const isLoggedIn = ref(savedLogin === '1')
+
   // 当前模式 key（从 localStorage 恢复）
   const savedMode = typeof localStorage !== 'undefined' ? localStorage.getItem('zz_active_mode') : null
   const activeModeKey = ref(savedMode || 'standard')
@@ -160,10 +164,27 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 登录：写入登录态（仅前端模拟）
+  function login() {
+    isLoggedIn.value = true
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('zz_logged_in', '1')
+    }
+  }
+
+  // 退出登录：清除登录态并跳转到登录页
+  function logout() {
+    isLoggedIn.value = false
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('zz_logged_in')
+    }
+  }
+
   return {
     profile,
     selectedMood,
     medReminderOn,
+    isLoggedIn,
     activeModeKey,
     activeMode,
     isStandard,
@@ -176,5 +197,7 @@ export const useUserStore = defineStore('user', () => {
     selectMood,
     toggleMedReminder,
     setMode,
+    login,
+    logout,
   }
 })

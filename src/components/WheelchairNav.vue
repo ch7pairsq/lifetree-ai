@@ -2,7 +2,7 @@
 import { useRouter, useRoute } from 'vue-router'
 import AppIcon from './AppIcon.vue'
 
-// 轮椅模式：底部导航 + 语音操作按钮
+// 轮椅模式：底部导航
 const router = useRouter()
 const route = useRoute()
 
@@ -15,10 +15,6 @@ const tabs = [
 
 function go(path: string) {
   router.push(path)
-}
-
-function voiceTap() {
-  router.push('/companion')
 }
 </script>
 
@@ -34,11 +30,6 @@ function voiceTap() {
       <AppIcon :name="tab.icon" :size="22" />
       <span class="wc-label">{{ tab.label }}</span>
     </a>
-    <!-- 语音操作快捷按钮 -->
-    <button class="wc-voice-btn" aria-label="语音操作" @click="voiceTap">
-      <AppIcon name="mic" :size="22" color="#fff" />
-      <span class="wc-voice-text">语音</span>
-    </button>
   </nav>
 </template>
 
@@ -80,30 +71,5 @@ function voiceTap() {
 .wc-label {
   font-size: 0.75rem;
   font-weight: 500;
-}
-.wc-voice-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 52px;
-  height: 52px;
-  border: none;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.35);
-  transition: transform 0.15s;
-  flex-shrink: 0;
-}
-.wc-voice-btn:active {
-  transform: scale(0.92);
-}
-.wc-voice-text {
-  font-size: 0.7rem;
-  font-weight: 600;
-  line-height: 1;
 }
 </style>
