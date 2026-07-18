@@ -853,7 +853,7 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
 /* 聊天输入栏：固定在 tab 栏上方 */
 .chat-input-bar {
   position: fixed;
-  bottom: 120px;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
