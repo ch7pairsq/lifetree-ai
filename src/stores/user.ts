@@ -127,8 +127,12 @@ export const useUserStore = defineStore('user', () => {
   const selectedMood = ref<string | null>(null)
   const medReminderOn = ref(true)
 
-  // 登录态：仅内存保存，重启后默认未登录，强制回到登录页
-  const isLoggedIn = ref(false)
+  // 登录态：使用 sessionStorage 保存
+  // - 刷新页面：sessionStorage 仍在 → 保持登录，停留在当前页
+  // - 关闭浏览器/重启：sessionStorage 被清空 → 自动回到登录页
+  const isLoggedIn = ref(
+    typeof sessionStorage !== 'undefined' && sessionStorage.getItem('zz_logged_in') === '1'
+  )
 
   // 当前模式 key（从 localStorage 恢复）
   const savedMode = typeof localStorage !== 'undefined' ? localStorage.getItem('zz_active_mode') : null
@@ -163,14 +167,20 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 登录：写入登录态（仅内存，重启后失效）
+  // 登录：写入登录态（sessionStorage，刷新时保持，关闭浏览器后失效）
   function login() {
     isLoggedIn.value = true
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('zz_logged_in', '1')
+    }
   }
 
   // 退出登录：清除登录态
   function logout() {
     isLoggedIn.value = false
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('zz_logged_in')
+    }
   }
 
   return {
