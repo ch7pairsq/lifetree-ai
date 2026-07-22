@@ -244,6 +244,7 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
             </div>
             <button class="ability-close" @click="showMemoryRecords = false"><AppIcon name="x" :size="18" /></button>
           </div>
+          <div class="ability-dialog-body">
           <div class="ability-dialog-tip">小康会帮您记住生活里的每一件小事，到点智能提醒</div>
           <div class="memory-record-list">
             <div v-for="(r, idx) in companionMemoryRecords" :key="idx" class="memory-record-item">
@@ -260,6 +261,7 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </transition>
@@ -275,6 +277,7 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
             </div>
             <button class="ability-close" @click="showMemoirDialog = false"><AppIcon name="x" :size="18" /></button>
           </div>
+          <div class="ability-dialog-body">
           <div class="ability-dialog-tip">和小康聊聊过往的点点滴滴，AI协助您写人生回忆录</div>
 
           <!-- 回忆故事片段 -->
@@ -308,6 +311,7 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
               </div>
               <AppIcon name="chevron-right" :size="16" :color="'var(--color-text-tertiary)'" />
             </button>
+          </div>
           </div>
         </div>
       </div>
@@ -517,12 +521,13 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
   width: 100%;
   max-width: 430px;
   background: var(--color-surface-solid);
-  border-radius: 24px;
-  padding: var(--space-5) var(--space-5) var(--space-6);
-  box-shadow: var(--shadow-float);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   animation: ability-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 85vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 @keyframes ability-fade-in {
   from { opacity: 0; transform: scale(0.96); }
@@ -532,7 +537,10 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-2);
+  padding: 16px 18px;
+  background: var(--color-surface-solid);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 .ability-dialog-title {
   display: flex;
@@ -552,9 +560,17 @@ function writeChapter(chapter: typeof memoirChapters[number]) {
   min-height: 32px !important;
   border-radius: 50%;
   border: none;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: transparent;
+  color: var(--color-text-tertiary);
   cursor: pointer;
+  flex-shrink: 0;
+}
+.ability-close:hover { background: rgba(0, 0, 0, 0.06); }
+.ability-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  min-height: 0;
 }
 .ability-dialog-tip {
   font-size: var(--text-sm);

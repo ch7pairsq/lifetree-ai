@@ -19,6 +19,8 @@ import {
   BookHeart, Trophy, ScrollText, Hand, Rocket,
   Newspaper, Play, Pause, Mountain, ZoomIn, Scissors, Book, Carrot,
   Download, Image as ImageIcon, Wrench, HardHat, LogOut,
+  Hammer, Flower, Bus, Building, CreditCard, Gamepad,
+  Gift, Briefcase,
 } from 'lucide-vue-next'
 
 // 图标名称 -> 组件映射
@@ -158,6 +160,14 @@ const map: Record<string, Component> = {
   wrench: Wrench,
   'hard-hat': HardHat,
   'log-out': LogOut,
+  hammer: Hammer,
+  flower: Flower,
+  bus: Bus,
+  building: Building,
+  'credit-card': CreditCard,
+  gamepad: Gamepad,
+  gift: Gift,
+  briefcase: Briefcase,
 }
 
 const props = withDefaults(defineProps<{

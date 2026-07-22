@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
-import { menuGroups, sharedMembers, smartDevices } from '@/mock'
+import {
+  menuGroups, sharedMembers, smartDevices, feedbackCategories, feedbackCases,
+  healthArchive, familyShareDetail, aiInterviewDetail, orderListDetail,
+  memberBenefits, reminderSettings, aiManagerSettings, memoirChapters,
+} from '@/mock'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -19,34 +23,75 @@ function openOfficialWebsite() {
   window.open('/official.html', '_blank')
 }
 
+// ===== 适老化意见反馈 =====
+const showFeedbackPanel = ref(false)
+const feedbackStep = ref<'form' | 'list'>('form')
+const feedbackForm = ref({
+  category: '',
+  location: '',
+  desc: '',
+  contact: '',
+})
+function openFeedbackPanel() {
+  feedbackStep.value = 'form'
+  feedbackForm.value = { category: '', location: '', desc: '', contact: '' }
+  showFeedbackPanel.value = true
+}
+function openFeedbackList() {
+  feedbackStep.value = 'list'
+  showFeedbackPanel.value = true
+}
+function selectFeedbackCategory(id: string) {
+  feedbackForm.value.category = id
+}
+function submitFeedback() {
+  const cat = feedbackCategories.find((c) => c.id === feedbackForm.value.category)
+  if (!cat) {
+    showAlert('请选择反馈类别')
+    return
+  }
+  if (!feedbackForm.value.desc.trim()) {
+    showAlert('请填写具体问题描述')
+    return
+  }
+  showAlert(`意见反馈已提交！\n\n单号：FB${Date.now().toString().slice(-7)}\n类别：${cat.name}\n\n小康将在 24 小时内审核，3 个工作日内由专人联系相关机构协调解决。可在「我的反馈进度」中跟踪处理进展。`)
+  showFeedbackPanel.value = false
+}
+
 // 菜单点击提示（标准/高龄/视障/卧床模式）
 function onMenu(text: string) {
   if (text === '健康档案管理') {
-    openInfoDialog('健康档案管理', '王秀兰 · 68岁 · 女\n\n健康评分：86分\n风险等级：低风险\n血型：A型\n过敏史：青霉素\n慢性病：高血压、轻度骨质疏松\n最近体检：2026年6月15日')
+    openHealthArchive()
   } else if (text === '我的用药清单') {
-    openInfoDialog('我的用药清单', '当前长期用药：\n· 降压药 每日1次 早饭后\n· 降糖药 每日3次 饭前30分钟\n· 钙片 每日2片 晚饭后\n\n下周需复诊开药：降压药（剩余8天用量）')
+    openHealthArchive()
+    healthArchiveTab.value = 'medication'
   } else if (text === '健康报告') {
     openInfoDialog('健康报告', '本周健康报告（7月8日-7月14日）：\n\n· 心率：均值72bpm，正常\n· 血压：均值128/82，略偏高\n· 睡眠：日均7.2小时，质量良好\n· 步数：日均3280步\n· 用药依从性：100%\n\n趋势：整体平稳，建议继续低盐饮食。')
   } else if (text === 'AI 采访') {
-    openInfoDialog('AI 采访', '小康定期采访您的 life story：\n\n· 上次采访：7月10日「退休后的旅行记忆」\n· 下次采访：7月20日「与老伴的故事」\n\n小康会用聊天的方式，慢慢引导您回忆往事，自动整理成人生故事集。')
+    openAiInterview()
   } else if (text === '记忆年轮') {
     openInfoDialog('记忆年轮', '您的人生记忆年轮：\n\n· 1960年代 童年：12条记忆\n· 1970年代 青年：8条记忆\n· 1980年代 成家：15条记忆\n· 2000年代 事业：10条记忆\n· 2010年代 退休：6条记忆\n\n点击各年代可重温对应回忆。')
   } else if (text === 'AI 管家设置') {
-    openInfoDialog('AI 管家设置', '小康AI管家个性化设置：\n\n· 语音播报语速：中速\n· 称呼方式：王奶奶\n· 主动提醒：已开启\n· 健康守护：已开启\n· 夜间免打扰：22:00-07:00\n\n小康会按您的习惯贴心服务。')
+    openAiManager()
   } else if (text === '我的订单') {
-    openInfoDialog('我的订单', '近期订单：\n\n· 钙片+维生素D组合 ¥128 已签收\n· 防滑浴室地垫 ¥39 配送中\n· 上门家政（深度保洁）¥169 已完成\n\n近3个月共12笔订单。')
+    openOrders()
   } else if (text === '服务预约记录') {
-    openInfoDialog('服务预约记录', '近期预约：\n\n· 7月18日 京剧名段赏析会 已报名\n· 7月19日 公园花卉摄影采风 待定\n· 7月25日 安心陪诊（协和医院）已预约\n\n点击对应预约可查看详情或取消。')
+    openOrders()
+    ordersTab.value = 'service'
   } else if (text === '会员权益') {
-    openInfoDialog('会员权益', '当前等级：黄金会员\n\n专属权益：\n· 生活服务9折\n· 陪诊服务优先预约\n· 每月1次免费上门体检\n· 24小时健康咨询\n\n成长值：2680 / 3000（距白金还差320）')
+    openMemberBenefits()
   } else if (text === '界面模式切换') {
     openInfoDialog('界面模式切换', '请在首页右上角点击模式切换按钮，选择适合您的界面模式：\n· 活力老人（标准）\n· 高龄长辈（大字大按钮）\n· 视障语音（语音优先）\n· 卧床模式（工具栏快捷）\n\n切换后自动记忆您的选择。')
   } else if (text === '提醒设置') {
-    openInfoDialog('提醒设置', '提醒方式设置：\n\n· 用药提醒：已开启（语音+震动）\n· 喝水提醒：已开启（每2小时）\n· 测血压提醒：已开启（每周一三五）\n· 运动提醒：已开启（每日9:00）\n· 夜间免打扰：22:00-07:00')
+    openReminderSettings()
   } else if (text === '隐私与安全') {
     openInfoDialog('隐私与安全', '隐私安全设置：\n\n· 健康数据共享：仅家庭成员\n· 位置共享：仅女儿小芳\n· 数据加密：已开启\n· 远程查看授权：2人（女儿、家庭医生）\n\n您的数据安全由我们严格守护。')
   } else if (text === '系统设置') {
     openInfoDialog('系统设置', '系统设置：\n\n· 字体大小：标准\n· 屏幕亮度：自动\n· 通知铃声：温和提示音\n· 缓存清理：建议清理（占用23MB）\n· 版本：v2.6.1\n· 检查更新：已是最新')
+  } else if (text === '适老化意见反馈') {
+    openFeedbackPanel()
+  } else if (text === '我的反馈进度') {
+    openFeedbackList()
   }
 }
 
@@ -54,7 +99,8 @@ function onMenu(text: string) {
 const showSharePanel = ref(false)
 const memberList = ref(smartDevices.length ? sharedMembers.map((m) => ({ ...m })) : [])
 function openSharePanel() {
-  showSharePanel.value = true
+  // 任务7：打开扩展的家庭共享设置弹窗（含成员管理、权限、邀请）
+  openFamilyShare()
 }
 
 // 统一提示弹窗（替代原生 alert）
@@ -228,6 +274,114 @@ function onCaregiverMenu(text: string) {
     openInfoDialog('系统设置', '系统设置：\n· 字体大小：标准\n· 通知铃声：温和提示音\n· 数据同步：自动\n· 缓存清理：建议清理\n· 版本：v2.6.1')
   }
 }
+
+// ===== 任务6：健康档案管理弹窗（4个tab） =====
+const showHealthArchive = ref(false)
+const healthArchiveTab = ref<'profile' | 'checkup' | 'record' | 'medication'>('profile')
+function openHealthArchive() {
+  healthArchiveTab.value = 'profile'
+  showHealthArchive.value = true
+}
+
+// ===== 任务7：家庭共享设置弹窗（扩展） =====
+const showFamilyShare = ref(false)
+const familyShareTab = ref<'members' | 'permissions' | 'invite'>('members')
+function openFamilyShare() {
+  familyShareTab.value = 'members'
+  showFamilyShare.value = true
+}
+function toggleMemberPermission(memberId: string, permKey: string) {
+  const m = familyShareDetail.members.find((x) => x.id === memberId)
+  if (!m) return
+  const idx = m.permissions.indexOf(permKey)
+  if (idx >= 0) m.permissions.splice(idx, 1)
+  else m.permissions.push(permKey)
+}
+function inviteMember(type: string) {
+  const map: Record<string, string> = { child: '子女', doctor: '家庭医生', nurse: '护理员' }
+  showAlert(`正在生成${map[type]}邀请二维码...\n\n可将二维码发送给对方，扫码后即可绑定并查看您授权的内容。`)
+}
+
+// ===== 任务8：AI采访弹窗 =====
+const showAiInterview = ref(false)
+const aiInterviewTab = ref<'topics' | 'features' | 'chapters'>('topics')
+function openAiInterview() {
+  aiInterviewTab.value = 'topics'
+  showAiInterview.value = true
+}
+function startInterview(topicId: string) {
+  const topic = aiInterviewDetail.topics.find((t) => t.id === topicId)
+  if (!topic) return
+  showAlert(`小康开始陪您回忆「${topic.name}」\n\n点击下方麦克风按钮开始讲述，小康会引导提问，您的讲述将自动转为文字，整理进回忆录。\n\n已为您准备 ${topic.questions} 个引导问题，可慢慢讲述，亦可上传老照片辅助回忆。`)
+}
+function shareMemoir() {
+  showAlert('回忆录分享链接已生成！\n\n· 链接已复制到剪贴板\n· 子女可点击链接查看并补充细节\n· 仅授权家属可查看，永久有效\n\n让亲情与记忆代代相传～')
+}
+function startVoiceRecord() {
+  showAlert('语音录制开始...\n\n请慢慢讲述，小康会自动将您的声音转为文字。讲述过程中可随时上传老照片辅助回忆。')
+}
+function uploadOldPhoto() {
+  showAlert('正在打开相册...\n\n选择老照片后，小康会识别时代背景，帮您更好地回忆往事。')
+}
+
+// ===== 任务9：我的订单弹窗（3类） =====
+const showOrders = ref(false)
+const ordersTab = ref<'shop' | 'service' | 'course'>('shop')
+function openOrders() {
+  ordersTab.value = 'shop'
+  showOrders.value = true
+}
+function trackOrder(id: string) { showAlert(`订单 ${id} 物流追踪：\n\n· 已发货，预计 2026-07-12 送达\n· 当前位置：北京顺义分拣中心\n· 配送员：小张 138****1234`) }
+function reviewOrder(id: string) { showAlert(`订单 ${id} 评价入口已打开\n\n感谢您的反馈，您的评价将帮助其他老人做出选择。`) }
+function reorder(id: string) { showAlert(`订单 ${id} 已加入购物车\n\n可直接去康养商城结算。`) }
+function reviewService(id: string) { showAlert(`服务 ${id} 评价入口已打开\n\n您对本次服务的评价对小康团队非常重要。`) }
+function reviewCourse(id: string) { showAlert(`课程 ${id} 评价入口已打开\n\n您的反馈将帮助讲师优化课程内容。`) }
+
+// ===== 任务10：会员权益弹窗 =====
+const showMemberBenefits = ref(false)
+const memberTab = ref<'level' | 'subscribe' | 'points'>('level')
+function openMemberBenefits() {
+  memberTab.value = 'level'
+  showMemberBenefits.value = true
+}
+// 辅助函数：避免在 Vue 模板中使用 TS 类型断言
+function isCurrentLevel(lv: { current?: boolean }): boolean { return !!lv.current }
+function isPopularPlan(p: { popular?: boolean }): boolean { return !!p.popular }
+function subscribePlan(name: string) { showAlert(`已选择「${name}」\n\n· 月费自动续费可随时取消\n· 第一个月可免费体验\n· 子女账号可在家庭套餐下绑定共享\n\n点击确认立即开通。`) }
+function redeemPoints(item: string, points: number) {
+  if (memberBenefits.currentPoints < points) {
+    showAlert(`积分不足！\n\n兑换「${item}」需要 ${points} 积分，您当前积分 ${memberBenefits.currentPoints}。\n可通过签到、健康打卡、商城消费等获取积分。`)
+    return
+  }
+  showAlert(`兑换成功！\n\n· 商品：${item}\n· 消耗积分：${points}\n· 剩余积分：${memberBenefits.currentPoints - points}\n\n商品将在3个工作日内送达。`)
+}
+
+// ===== 任务11：提醒设置弹窗 =====
+const showReminderSettings = ref(false)
+const reminderList = ref(reminderSettings.categories.map((c) => ({ ...c, methods: { ...c.methods } })))
+const doNotDisturb = ref({ ...reminderSettings.doNotDisturb })
+function openReminderSettings() { showReminderSettings.value = true }
+function toggleReminder(idx: number) { reminderList.value[idx].enabled = !reminderList.value[idx].enabled }
+function toggleReminderMethod(idx: number, key: 'voice' | 'vibrate' | 'popup') {
+  reminderList.value[idx].methods[key] = !reminderList.value[idx].methods[key]
+}
+function saveReminders() { showAlert('提醒设置已保存！\n\n小康将按您的设置及时提醒，重要事项不会漏。') }
+
+// ===== 任务12：AI管家设置弹窗 =====
+const showAiManager = ref(false)
+const aiManager = reactive({
+  voiceSpeed: aiManagerSettings.voiceSpeed,
+  voiceType: aiManagerSettings.voiceType,
+  dialect: aiManagerSettings.dialect,
+  volume: aiManagerSettings.volume,
+  careFrequency: aiManagerSettings.careFrequency,
+  nickname: aiManagerSettings.nickname,
+})
+const aiCareOptions = ref(aiManagerSettings.careOptions.map((c) => ({ ...c })))
+function openAiManager() { showAiManager.value = true }
+function toggleCareOption(idx: number) { aiCareOptions.value[idx].enabled = !aiCareOptions.value[idx].enabled }
+function previewVoice() { showAlert(`小康正在用「${aiManager.voiceType}（${aiManager.dialect}）」向您打招呼...\n\n「${aiManager.nickname}您好，今天感觉怎么样？小康一直陪着您呢～」`) }
+function saveAiManager() { showAlert('AI管家设置已保存！\n\n小康会按您的偏好贴心服务，主动关怀频率也会相应调整。') }
 
 // 美化弹窗（从上方滑入）
 const showInfoDialog = ref(false)
@@ -684,6 +838,690 @@ function openInfoDialog(title: string, msg: string) {
       </div>
     </div>
   </transition>
+
+  <!-- 适老化意见反馈弹窗 -->
+  <transition name="fade">
+    <div v-if="showFeedbackPanel" class="feedback-mask" @click="showFeedbackPanel = false">
+      <div class="feedback-dialog" @click.stop>
+        <div class="feedback-head">
+          <div class="feedback-title">
+            <AppIcon :name="feedbackStep === 'form' ? 'message-square' : 'clipboard-list'" :size="20" color="var(--color-brand)" />
+            <span>{{ feedbackStep === 'form' ? '适老化意见反馈' : '我的反馈进度' }}</span>
+          </div>
+          <button class="feedback-close" @click="showFeedbackPanel = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+
+        <!-- 表单 -->
+        <div v-if="feedbackStep === 'form'" class="feedback-body">
+          <div class="feedback-intro">
+            <AppIcon name="heart-handshake" :size="14" color="var(--color-brand)" />
+            <span>反馈社会中需要适老化改造的问题，专人收集后统一联系相关机构协调解决</span>
+          </div>
+
+          <div class="feedback-section-label">选择反馈类别</div>
+          <div class="feedback-cat-grid">
+            <button
+              v-for="c in feedbackCategories"
+              :key="c.id"
+              class="feedback-cat-item"
+              :class="{ active: feedbackForm.category === c.id }"
+              @click="selectFeedbackCategory(c.id)"
+            >
+              <span class="feedback-cat-icon"><AppIcon :name="c.icon" :size="20" color="var(--color-brand)" /></span>
+              <span class="feedback-cat-name">{{ c.name }}</span>
+              <span class="feedback-cat-desc">{{ c.desc }}</span>
+            </button>
+          </div>
+
+          <div class="feedback-section-label">具体位置（可选）</div>
+          <input v-model="feedbackForm.location" class="feedback-input" placeholder="如：和平里西街12路公交站" />
+
+          <div class="feedback-section-label">问题描述</div>
+          <textarea v-model="feedbackForm.desc" class="feedback-textarea" rows="6" placeholder="请详细描述遇到的问题，例如：公交车进门台阶过高，老人上不去；站牌字体太小看不清等"></textarea>
+
+          <div class="feedback-section-label">联系方式（可选）</div>
+          <input v-model="feedbackForm.contact" class="feedback-input" placeholder="手机号，便于工作人员跟进反馈" />
+
+          <div class="feedback-tip">
+            <AppIcon name="shield-check" :size="13" color="var(--color-brand)" />
+            <span>提交后专人 24 小时内审核，3 个工作日内联系相关机构协调处理</span>
+          </div>
+
+          <button class="feedback-submit-btn" @click="submitFeedback">
+            <AppIcon name="send" :size="16" color="#fff" />
+            <span>提交反馈</span>
+          </button>
+        </div>
+
+        <!-- 反馈进度列表 -->
+        <div v-else class="feedback-body">
+          <div class="feedback-intro">
+            <AppIcon name="info" :size="14" color="var(--color-brand)" />
+            <span>以下为您的反馈处理进度，专人持续跟进直至解决</span>
+          </div>
+          <div class="feedback-case-list">
+            <div v-for="c in feedbackCases" :key="c.id" class="feedback-case-item">
+              <div class="feedback-case-head">
+                <span class="feedback-case-id">{{ c.id }}</span>
+                <span class="feedback-case-status" :class="c.status">{{ c.status }}</span>
+              </div>
+              <div class="feedback-case-meta">
+                <span><AppIcon name="target" :size="11" /> {{ c.category }}</span>
+                <span><AppIcon name="map-pin" :size="11" /> {{ c.location }}</span>
+                <span><AppIcon name="clock" :size="11" /> {{ c.date }}</span>
+              </div>
+              <div class="feedback-case-desc">{{ c.desc }}</div>
+              <div class="feedback-case-progress">
+                <AppIcon name="refresh-cw" :size="12" color="var(--color-brand)" />
+                <span>{{ c.progress }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="feedback-submit-btn ghost" @click="feedbackStep = 'form'">
+            <AppIcon name="plus" :size="16" color="var(--color-brand)" />
+            <span>提交新反馈</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务6：健康档案管理弹窗 -->
+  <transition name="fade">
+    <div v-if="showHealthArchive" class="ha-mask" @click="showHealthArchive = false">
+      <div class="ha-dialog" @click.stop>
+        <div class="ha-head">
+          <div class="ha-title"><AppIcon name="clipboard-list" :size="20" color="var(--color-brand)" /> 健康档案管理</div>
+          <button class="ha-close" @click="showHealthArchive = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="ha-tabs">
+          <button class="ha-tab" :class="{ active: healthArchiveTab === 'profile' }" @click="healthArchiveTab = 'profile'">个人档案</button>
+          <button class="ha-tab" :class="{ active: healthArchiveTab === 'checkup' }" @click="healthArchiveTab = 'checkup'">体检报告</button>
+          <button class="ha-tab" :class="{ active: healthArchiveTab === 'record' }" @click="healthArchiveTab = 'record'">病历记录</button>
+          <button class="ha-tab" :class="{ active: healthArchiveTab === 'medication' }" @click="healthArchiveTab = 'medication'">用药清单</button>
+        </div>
+        <div class="ha-body">
+          <!-- 个人档案 -->
+          <div v-if="healthArchiveTab === 'profile'" class="ha-profile">
+            <div class="ha-profile-header">
+              <div class="ha-profile-avatar"><AppIcon name="circle-user" :size="36" color="var(--color-brand-dark)" /></div>
+              <div>
+                <div class="ha-profile-name">{{ healthArchive.profile.name }} · {{ healthArchive.profile.age }}岁 · {{ healthArchive.profile.gender }}</div>
+                <div class="ha-profile-id">档案编号：{{ healthArchive.profile.id }}</div>
+              </div>
+              <div class="ha-profile-score">
+                <div class="ha-score-num">{{ healthArchive.profile.healthScore }}</div>
+                <div class="ha-score-label">健康评分</div>
+              </div>
+            </div>
+            <div class="ha-info-grid">
+              <div class="ha-info-item"><span class="ha-info-label">血型</span><span class="ha-info-val">{{ healthArchive.profile.bloodType }}型</span></div>
+              <div class="ha-info-item"><span class="ha-info-label">身高</span><span class="ha-info-val">{{ healthArchive.profile.height }}</span></div>
+              <div class="ha-info-item"><span class="ha-info-label">体重</span><span class="ha-info-val">{{ healthArchive.profile.weight }}</span></div>
+              <div class="ha-info-item"><span class="ha-info-label">风险等级</span><span class="ha-info-val ha-tag-safe">{{ healthArchive.profile.riskLevel }}</span></div>
+              <div class="ha-info-item ha-info-full"><span class="ha-info-label">过敏史</span><span class="ha-info-val ha-tag-warn">{{ healthArchive.profile.allergies }}</span></div>
+              <div class="ha-info-item ha-info-full"><span class="ha-info-label">慢性病</span><span class="ha-info-val">{{ healthArchive.profile.chronic }}</span></div>
+              <div class="ha-info-item ha-info-full"><span class="ha-info-label">家族病史</span><span class="ha-info-val">{{ healthArchive.profile.familyHistory }}</span></div>
+              <div class="ha-info-item ha-info-full"><span class="ha-info-label">手术史</span><span class="ha-info-val">{{ healthArchive.profile.surgery }}</span></div>
+              <div class="ha-info-item ha-info-full"><span class="ha-info-label">最近体检</span><span class="ha-info-val">{{ healthArchive.profile.lastCheckup }}</span></div>
+            </div>
+          </div>
+
+          <!-- 体检报告 -->
+          <div v-else-if="healthArchiveTab === 'checkup'" class="ha-checkup">
+            <div v-for="(c, idx) in healthArchive.checkups" :key="idx" class="ha-checkup-card">
+              <div class="ha-checkup-head">
+                <div class="ha-checkup-date">{{ c.date }}</div>
+                <div class="ha-checkup-hosp">{{ c.hospital }} · {{ c.type }}</div>
+              </div>
+              <div class="ha-checkup-summary">{{ c.summary }}</div>
+              <div class="ha-checkup-items">
+                <div v-for="(item, i) in c.items" :key="i" class="ha-checkup-item">
+                  <div class="ha-cu-name">{{ item.name }}</div>
+                  <div class="ha-cu-value">{{ item.value }} <span class="ha-cu-unit">{{ item.unit }}</span></div>
+                  <div class="ha-cu-normal">参考：{{ item.normal }}</div>
+                  <span class="ha-cu-status" :class="{ normal: item.status === '正常', warn: item.status === '偏高' || item.status === '偏低' }">{{ item.status }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 病历记录 -->
+          <div v-else-if="healthArchiveTab === 'record'" class="ha-record">
+            <div v-for="(r, idx) in healthArchive.records" :key="idx" class="ha-record-card">
+              <div class="ha-record-head">
+                <span class="ha-record-date">{{ r.date }}</span>
+                <span class="ha-record-dept">{{ r.hospital }} · {{ r.dept }}</span>
+                <span class="ha-record-doctor"><AppIcon name="stethoscope" :size="12" /> {{ r.doctor }}</span>
+              </div>
+              <div class="ha-record-diag"><AppIcon name="alert-triangle" :size="13" color="var(--state-error)" /> 诊断：{{ r.diagnosis }}</div>
+              <div class="ha-record-prescription"><AppIcon name="pill" :size="13" color="var(--color-brand)" /> 处方：{{ r.prescription }}</div>
+              <div class="ha-record-note"><AppIcon name="info" :size="13" color="var(--color-text-tertiary)" /> 备注：{{ r.note }}</div>
+            </div>
+          </div>
+
+          <!-- 用药清单 -->
+          <div v-else-if="healthArchiveTab === 'medication'" class="ha-medication">
+            <div class="ha-med-tip">
+              <AppIcon name="info" :size="13" color="var(--color-brand)" />
+              <span>当前共 {{ healthArchive.medications.length }} 种长期用药，请遵医嘱按时服用</span>
+            </div>
+            <div v-for="(m, idx) in healthArchive.medications" :key="idx" class="ha-med-card">
+              <div class="ha-med-icon"><AppIcon name="pill" :size="20" color="#fff" /></div>
+              <div class="ha-med-info">
+                <div class="ha-med-name">{{ m.name }} <span class="ha-med-purpose">{{ m.purpose }}</span></div>
+                <div class="ha-med-meta">
+                  <span><AppIcon name="clock" :size="11" /> {{ m.time }}</span>
+                  <span><AppIcon name="refresh-cw" :size="11" /> {{ m.frequency }}</span>
+                  <span><AppIcon name="calendar-days" :size="11" /> 起始 {{ m.startDate }}</span>
+                </div>
+              </div>
+              <div class="ha-med-side">
+                <div class="ha-med-dose">{{ m.dose }}</div>
+                <span class="ha-med-status">{{ m.status }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务7：家庭共享设置弹窗（扩展） -->
+  <transition name="fade">
+    <div v-if="showFamilyShare" class="fs-mask" @click="showFamilyShare = false">
+      <div class="fs-dialog" @click.stop>
+        <div class="fs-head">
+          <div class="fs-title"><AppIcon name="users" :size="20" color="var(--color-brand)" /> 家庭共享设置</div>
+          <button class="fs-close" @click="showFamilyShare = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="fs-tabs">
+          <button class="fs-tab" :class="{ active: familyShareTab === 'members' }" @click="familyShareTab = 'members'">成员关系</button>
+          <button class="fs-tab" :class="{ active: familyShareTab === 'permissions' }" @click="familyShareTab = 'permissions'">共享权限</button>
+          <button class="fs-tab" :class="{ active: familyShareTab === 'invite' }" @click="familyShareTab = 'invite'">邀请加入</button>
+        </div>
+        <div class="fs-body">
+          <!-- 成员关系 -->
+          <div v-if="familyShareTab === 'members'" class="fs-members">
+            <div class="fs-intro">
+              <AppIcon name="info" :size="13" color="var(--color-brand)" />
+              <span>管理家庭成员关系，已绑定 {{ familyShareDetail.members.length }} 位共享人员</span>
+            </div>
+            <div v-for="m in familyShareDetail.members" :key="m.id" class="fs-member">
+              <div class="fs-member-avatar" :style="{ background: m.color }"><AppIcon :name="m.avatar" :size="22" color="#fff" /></div>
+              <div class="fs-member-info">
+                <div class="fs-member-name">{{ m.name }} <span class="fs-member-relation">{{ m.relation }}</span></div>
+                <div class="fs-member-perms">
+                  <span v-for="p in m.permissions" :key="p" class="fs-perm-chip">{{ familyShareDetail.permissionOptions.find((o) => o.key === p)?.name }}</span>
+                </div>
+              </div>
+              <div class="fs-member-side">
+                <span class="fs-member-status" :class="{ online: m.online, offline: !m.online }">{{ m.online ? '在线' : '离线' }}</span>
+                <span v-if="m.distance" class="fs-member-dist">{{ m.distance }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 共享权限 -->
+          <div v-else-if="familyShareTab === 'permissions'" class="fs-perms">
+            <div class="fs-intro">
+              <AppIcon name="shield-check" :size="13" color="var(--color-brand)" />
+              <span>为每位成员设置可见的数据范围，敏感信息需本人指纹验证</span>
+            </div>
+            <table class="fs-perm-table">
+              <thead>
+                <tr>
+                  <th>成员</th>
+                  <th v-for="opt in familyShareDetail.permissionOptions" :key="opt.key" class="fs-perm-th">
+                    <AppIcon :name="opt.icon" :size="13" color="var(--color-brand)" />
+                    <span>{{ opt.name }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="m in familyShareDetail.members" :key="m.id">
+                  <td class="fs-perm-member">
+                    <span class="fs-perm-avatar" :style="{ background: m.color }"><AppIcon :name="m.avatar" :size="14" color="#fff" /></span>
+                    <span>{{ m.name }}<br /><small>{{ m.relation }}</small></span>
+                  </td>
+                  <td v-for="opt in familyShareDetail.permissionOptions" :key="opt.key" class="fs-perm-cell">
+                    <label class="fs-perm-switch" @click="toggleMemberPermission(m.id, opt.key)">
+                      <input type="checkbox" :checked="m.permissions.includes(opt.key)" readonly />
+                      <span class="fs-perm-slider"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 邀请加入 -->
+          <div v-else-if="familyShareTab === 'invite'" class="fs-invite">
+            <div class="fs-intro">
+              <AppIcon name="user-plus" :size="13" color="var(--color-brand)" />
+              <span>选择邀请类型，生成邀请二维码发给对方扫码绑定</span>
+            </div>
+            <div v-for="inv in familyShareDetail.inviteTypes" :key="inv.type" class="fs-invite-card" @click="inviteMember(inv.type)">
+              <div class="fs-invite-icon"><AppIcon :name="inv.icon" :size="24" color="var(--color-brand)" /></div>
+              <div class="fs-invite-info">
+                <div class="fs-invite-name">{{ inv.name }}</div>
+                <div class="fs-invite-desc">{{ inv.desc }}</div>
+              </div>
+              <AppIcon name="chevron-right" :size="18" color="var(--color-text-tertiary)" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务8：AI采访弹窗 -->
+  <transition name="fade">
+    <div v-if="showAiInterview" class="ai-mask" @click="showAiInterview = false">
+      <div class="ai-dialog" @click.stop>
+        <div class="ai-head">
+          <div class="ai-title"><AppIcon name="brain" :size="20" color="var(--color-brand)" /> AI 采访 · 人生回忆录</div>
+          <button class="ai-close" @click="showAiInterview = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="ai-tabs">
+          <button class="ai-tab" :class="{ active: aiInterviewTab === 'topics' }" @click="aiInterviewTab = 'topics'">回忆主题</button>
+          <button class="ai-tab" :class="{ active: aiInterviewTab === 'features' }" @click="aiInterviewTab = 'features'">功能特色</button>
+          <button class="ai-tab" :class="{ active: aiInterviewTab === 'chapters' }" @click="aiInterviewTab = 'chapters'">回忆录章节</button>
+        </div>
+        <div class="ai-body">
+          <!-- 主题 -->
+          <div v-if="aiInterviewTab === 'topics'" class="ai-topics">
+            <div class="ai-intro">
+              <AppIcon name="heart-handshake" :size="13" color="var(--color-brand)" />
+              <span>小康以聊天方式引导您回忆：童年、青春、工作、爱情、育儿，让亲情与记忆代代相传</span>
+            </div>
+            <div class="ai-topic-grid">
+              <button v-for="t in aiInterviewDetail.topics" :key="t.id" class="ai-topic-card" @click="startInterview(t.id)">
+                <div class="ai-topic-icon" :style="{ background: t.bg }"><AppIcon :name="t.icon" :size="22" color="#fff" /></div>
+                <div class="ai-topic-info">
+                  <div class="ai-topic-name">{{ t.name }}</div>
+                  <div class="ai-topic-desc">{{ t.desc }}</div>
+                  <div class="ai-topic-progress">已录 {{ t.recorded }} / {{ t.questions }} 问</div>
+                </div>
+                <AppIcon name="chevron-right" :size="16" color="var(--color-text-tertiary)" />
+              </button>
+            </div>
+            <div class="ai-actions">
+              <button class="ai-action-btn primary" @click="startVoiceRecord">
+                <AppIcon name="mic" :size="18" color="#fff" />
+                <span>开始语音讲述</span>
+              </button>
+              <button class="ai-action-btn" @click="uploadOldPhoto">
+                <AppIcon name="image" :size="18" color="var(--color-brand)" />
+                <span>上传老照片辅助</span>
+              </button>
+              <button class="ai-action-btn" @click="shareMemoir">
+                <AppIcon name="share" :size="18" color="var(--color-brand)" />
+                <span>分享给子女协作</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 功能特色 -->
+          <div v-else-if="aiInterviewTab === 'features'" class="ai-features">
+            <div class="ai-feature-grid">
+              <div v-for="(f, idx) in aiInterviewDetail.features" :key="idx" class="ai-feature-card">
+                <div class="ai-feature-icon"><AppIcon :name="f.icon" :size="22" color="var(--color-brand)" /></div>
+                <div class="ai-feature-name">{{ f.name }}</div>
+                <div class="ai-feature-desc">{{ f.desc }}</div>
+              </div>
+            </div>
+            <div class="ai-collab">
+              <div class="ai-collab-title"><AppIcon name="users" :size="14" color="var(--color-brand)" /> 子女协作补充</div>
+              <div class="ai-collab-list">
+                <div v-for="(c, idx) in aiInterviewDetail.collaborators" :key="idx" class="ai-collab-item">
+                  <span class="ai-collab-name">{{ c.name }}<small>{{ c.role }}</small></span>
+                  <span class="ai-collab-num">补充 {{ c.contributed }} 处</span>
+                  <span class="ai-collab-time">{{ c.lastTime }}</span>
+                </div>
+              </div>
+              <button class="ai-action-btn primary" @click="shareMemoir">
+                <AppIcon name="share" :size="16" color="#fff" />
+                <span>一键分享给子女，邀请协作补充</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 章节列表 -->
+          <div v-else-if="aiInterviewTab === 'chapters'" class="ai-chapters">
+            <div class="ai-intro">
+              <AppIcon name="book-heart" :size="13" color="var(--color-brand)" />
+              <span>AI 协助整理的人生回忆录，共 {{ memoirChapters.length }} 章，让后代了解先辈故事</span>
+            </div>
+            <div v-for="(c, idx) in memoirChapters" :key="idx" class="ai-chapter">
+              <div class="ai-chapter-no">{{ c.no }}</div>
+              <div class="ai-chapter-info">
+                <div class="ai-chapter-title">{{ c.title }}</div>
+                <div class="ai-chapter-meta">
+                  <span><AppIcon name="file-text" :size="11" /> {{ c.words }}字</span>
+                  <span v-if="c.updated"><AppIcon name="clock" :size="11" /> 更新于 {{ c.updated }}</span>
+                </div>
+              </div>
+              <span class="ai-chapter-status" :class="{ done: c.status === '已完成', doing: c.status === '撰写中', todo: c.status === '待开始' }">{{ c.status }}</span>
+            </div>
+            <button class="ai-action-btn primary" @click="shareMemoir">
+              <AppIcon name="share" :size="16" color="#fff" />
+              <span>分享完整回忆录给子女</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务9：我的订单弹窗（3类） -->
+  <transition name="fade">
+    <div v-if="showOrders" class="od-mask" @click="showOrders = false">
+      <div class="od-dialog" @click.stop>
+        <div class="od-head">
+          <div class="od-title"><AppIcon name="shopping-bag" :size="20" color="var(--color-brand)" /> 我的订单</div>
+          <button class="od-close" @click="showOrders = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="od-tabs">
+          <button class="od-tab" :class="{ active: ordersTab === 'shop' }" @click="ordersTab = 'shop'">商城订单</button>
+          <button class="od-tab" :class="{ active: ordersTab === 'service' }" @click="ordersTab = 'service'">服务预约</button>
+          <button class="od-tab" :class="{ active: ordersTab === 'course' }" @click="ordersTab = 'course'">课程报名</button>
+        </div>
+        <div class="od-body">
+          <!-- 商城订单 -->
+          <div v-if="ordersTab === 'shop'" class="od-shop">
+            <div v-for="o in orderListDetail.shopOrders" :key="o.id" class="od-card">
+              <div class="od-card-head">
+                <span class="od-card-id">{{ o.id }}</span>
+                <span class="od-card-status" :class="{ done: o.status === '已签收', doing: o.status === '配送中' }">{{ o.status }}</span>
+              </div>
+              <div class="od-card-info">
+                <div class="od-card-name">{{ o.name }}</div>
+                <div class="od-card-spec">{{ o.spec }}</div>
+                <div class="od-card-meta"><AppIcon name="calendar-days" :size="11" /> {{ o.date }}</div>
+              </div>
+              <div class="od-card-amount">¥{{ o.amount }}</div>
+              <div class="od-card-actions">
+                <button v-if="o.canTrack" class="od-action" @click="trackOrder(o.id)"><AppIcon name="navigation" :size="12" /> 追踪</button>
+                <button v-if="o.canReview && !o.reviewed" class="od-action" @click="reviewOrder(o.id)"><AppIcon name="star" :size="12" /> 评价</button>
+                <button v-if="o.canReorder" class="od-action primary" @click="reorder(o.id)"><AppIcon name="refresh-cw" :size="12" /> 复购</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 服务预约 -->
+          <div v-else-if="ordersTab === 'service'" class="od-service">
+            <div v-for="o in orderListDetail.serviceOrders" :key="o.id" class="od-card">
+              <div class="od-card-head">
+                <span class="od-card-id">{{ o.id }}</span>
+                <span class="od-card-type">{{ o.type }}</span>
+                <span class="od-card-status" :class="{ done: o.status === '已完成', doing: o.status === '待服务' || o.status === '施工中' }">{{ o.status }}</span>
+              </div>
+              <div class="od-card-info">
+                <div class="od-card-name">{{ o.name }}</div>
+                <div class="od-card-meta"><AppIcon name="calendar-days" :size="11" /> {{ o.date }}</div>
+                <div class="od-card-meta"><AppIcon name="user" :size="11" /> {{ o.staff }}</div>
+              </div>
+              <div class="od-card-amount">¥{{ o.amount }}</div>
+              <div class="od-card-actions">
+                <button v-if="o.canTrack" class="od-action" @click="trackOrder(o.id)"><AppIcon name="navigation" :size="12" /> 追踪</button>
+                <button v-if="o.canReview" class="od-action primary" @click="reviewService(o.id)"><AppIcon name="star" :size="12" /> 评价</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 课程报名 -->
+          <div v-else-if="ordersTab === 'course'" class="od-course">
+            <div v-for="o in orderListDetail.courseOrders" :key="o.id" class="od-card">
+              <div class="od-card-head">
+                <span class="od-card-id">{{ o.id }}</span>
+                <span class="od-card-status" :class="{ done: o.status === '已完成', doing: o.status === '已报名' }">{{ o.status }}</span>
+              </div>
+              <div class="od-card-info">
+                <div class="od-card-name">{{ o.name }}</div>
+                <div class="od-card-meta"><AppIcon name="calendar-days" :size="11" /> {{ o.date }}</div>
+                <div class="od-card-meta"><AppIcon name="map-pin" :size="11" /> {{ o.location }}</div>
+              </div>
+              <div class="od-card-actions">
+                <button v-if="o.canReview" class="od-action primary" @click="reviewCourse(o.id)"><AppIcon name="star" :size="12" /> 评价</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务10：会员权益弹窗 -->
+  <transition name="fade">
+    <div v-if="showMemberBenefits" class="mb-mask" @click="showMemberBenefits = false">
+      <div class="mb-dialog" @click.stop>
+        <div class="mb-head">
+          <div class="mb-title"><AppIcon name="gem" :size="20" color="var(--color-brand)" /> 会员权益</div>
+          <button class="mb-close" @click="showMemberBenefits = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="mb-tabs">
+          <button class="mb-tab" :class="{ active: memberTab === 'level' }" @click="memberTab = 'level'">会员等级</button>
+          <button class="mb-tab" :class="{ active: memberTab === 'subscribe' }" @click="memberTab = 'subscribe'">订阅管理</button>
+          <button class="mb-tab" :class="{ active: memberTab === 'points' }" @click="memberTab = 'points'">积分商城</button>
+        </div>
+        <div class="mb-body">
+          <!-- 会员等级 -->
+          <div v-if="memberTab === 'level'" class="mb-level">
+            <div class="mb-current">
+              <div class="mb-current-level">当前等级：<span :style="{ color: '#FFD700' }">{{ memberBenefits.currentLevel }}</span></div>
+              <div class="mb-current-progress">
+                <div class="mb-progress-bar"><div class="mb-progress-fill" :style="{ width: (memberBenefits.currentPoints / 3000 * 100) + '%' }"></div></div>
+                <div class="mb-progress-text">{{ memberBenefits.currentPoints }} / 3000 成长值，距 {{ memberBenefits.nextLevel }} 还差 {{ memberBenefits.growthToNext }}</div>
+              </div>
+            </div>
+            <div class="mb-level-list">
+              <div v-for="(lv, idx) in memberBenefits.levels" :key="idx" class="mb-level-card" :class="{ current: isCurrentLevel(lv) }">
+                <div class="mb-level-head">
+                  <div class="mb-level-name" :style="{ color: lv.color }">{{ lv.name }}</div>
+                  <span v-if="isCurrentLevel(lv)" class="mb-level-tag">当前</span>
+                </div>
+                <div class="mb-level-threshold">{{ lv.threshold }}</div>
+                <div class="mb-level-benefits">
+                  <div v-for="(b, i) in lv.benefits" :key="i" class="mb-level-benefit"><AppIcon name="check-circle" :size="11" color="var(--color-brand)" /> {{ b }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 订阅管理 -->
+          <div v-else-if="memberTab === 'subscribe'" class="mb-subscribe">
+            <div class="mb-intro">
+              <AppIcon name="info" :size="13" color="var(--color-brand)" />
+              <span>家庭套餐支持子女与父母绑定共享，尊享全家健康守护</span>
+            </div>
+            <div class="mb-plan-grid">
+              <div v-for="(p, idx) in memberBenefits.subscriptions" :key="idx" class="mb-plan-card" :class="{ popular: isPopularPlan(p) }">
+                <div v-if="isPopularPlan(p)" class="mb-plan-badge">推荐</div>
+                <div class="mb-plan-name">{{ p.name }}</div>
+                <div class="mb-plan-price">¥{{ p.price }}<small>/{{ p.period }}</small></div>
+                <div class="mb-plan-features">
+                  <div v-for="(f, i) in p.features" :key="i" class="mb-plan-feature"><AppIcon name="check-circle" :size="11" color="var(--color-brand)" /> {{ f }}</div>
+                </div>
+                <button class="mb-plan-btn" :class="{ primary: isPopularPlan(p) }" @click="subscribePlan(p.name)">立即订阅</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 积分商城 -->
+          <div v-else-if="memberTab === 'points'" class="mb-points">
+            <div class="mb-points-summary">
+              <div class="mb-points-num">{{ memberBenefits.currentPoints }}</div>
+              <div class="mb-points-label">可用积分</div>
+            </div>
+            <div class="mb-points-section-title"><AppIcon name="gift" :size="14" color="var(--color-brand)" /> 积分兑换</div>
+            <div class="mb-points-shop">
+              <div v-for="(item, idx) in memberBenefits.pointsShop" :key="idx" class="mb-points-item">
+                <div class="mb-points-icon"><AppIcon :name="item.icon" :size="24" color="var(--color-brand)" /></div>
+                <div class="mb-points-info">
+                  <div class="mb-points-name">{{ item.name }}</div>
+                  <div class="mb-points-original">价值 ¥{{ item.original }}</div>
+                </div>
+                <div class="mb-points-side">
+                  <div class="mb-points-cost">{{ item.points }} 积分</div>
+                  <button class="mb-points-btn" @click="redeemPoints(item.name, item.points)">兑换</button>
+                </div>
+              </div>
+            </div>
+            <div class="mb-points-section-title"><AppIcon name="clock" :size="14" color="var(--color-brand)" /> 积分明细</div>
+            <div class="mb-points-history">
+              <div v-for="(h, idx) in memberBenefits.pointsHistory" :key="idx" class="mb-points-row">
+                <span class="mb-points-date">{{ h.date }}</span>
+                <span class="mb-points-desc">{{ h.desc }}</span>
+                <span class="mb-points-change">{{ h.points }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务11：提醒设置弹窗 -->
+  <transition name="fade">
+    <div v-if="showReminderSettings" class="rs-mask" @click="showReminderSettings = false">
+      <div class="rs-dialog" @click.stop>
+        <div class="rs-head">
+          <div class="rs-title"><AppIcon name="bell" :size="20" color="var(--color-brand)" /> 提醒设置</div>
+          <button class="rs-close" @click="showReminderSettings = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="rs-body">
+          <div class="rs-intro">
+            <AppIcon name="info" :size="13" color="var(--color-brand)" />
+            <span>为每类提醒自定义提示方式（语音/震动/弹窗）与频率</span>
+          </div>
+          <div v-for="(r, idx) in reminderList" :key="r.key" class="rs-item">
+            <div class="rs-item-head">
+              <div class="rs-item-icon"><AppIcon :name="r.icon" :size="20" color="var(--color-brand)" /></div>
+              <div class="rs-item-info">
+                <div class="rs-item-name">{{ r.name }}</div>
+                <div class="rs-item-freq">{{ r.frequency }}</div>
+              </div>
+              <label class="rs-switch" @click="toggleReminder(idx)">
+                <input type="checkbox" :checked="r.enabled" readonly />
+                <span class="rs-slider"></span>
+              </label>
+            </div>
+            <div v-if="r.enabled" class="rs-item-methods">
+              <span class="rs-method-label">提示方式：</span>
+              <button v-for="opt in reminderSettings.methodOptions" :key="opt.key" class="rs-method" :class="{ active: (r.methods as Record<string, boolean>)[opt.key] }" @click="toggleReminderMethod(idx, opt.key as 'voice' | 'vibrate' | 'popup')">
+                <AppIcon :name="opt.icon" :size="13" />
+                <span>{{ opt.name }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="rs-dnd">
+            <div class="rs-dnd-head">
+              <AppIcon name="moon" :size="18" color="var(--color-brand)" />
+              <div class="rs-dnd-info">
+                <div class="rs-dnd-name">夜间免打扰</div>
+                <div class="rs-dnd-time">{{ doNotDisturb.start }} - {{ doNotDisturb.end }}</div>
+              </div>
+              <label class="rs-switch" @click="doNotDisturb.enabled = !doNotDisturb.enabled">
+                <input type="checkbox" :checked="doNotDisturb.enabled" readonly />
+                <span class="rs-slider"></span>
+              </label>
+            </div>
+          </div>
+          <button class="rs-save" @click="saveReminders">
+            <AppIcon name="check" :size="16" color="#fff" />
+            <span>保存设置</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 任务12：AI管家设置弹窗 -->
+  <transition name="fade">
+    <div v-if="showAiManager" class="am-mask" @click="showAiManager = false">
+      <div class="am-dialog" @click.stop>
+        <div class="am-head">
+          <div class="am-title"><AppIcon name="mic" :size="20" color="var(--color-brand)" /> AI 管家设置</div>
+          <button class="am-close" @click="showAiManager = false"><AppIcon name="x" :size="18" /></button>
+        </div>
+        <div class="am-body">
+          <!-- 语音设置 -->
+          <div class="am-section">
+            <div class="am-section-title"><AppIcon name="volume-2" :size="16" color="var(--color-brand)" /> 语音设置</div>
+            <div class="am-row">
+              <span class="am-row-label">语速</span>
+              <div class="am-seg">
+                <button v-for="opt in aiManagerSettings.voiceSpeedOptions" :key="opt" class="am-seg-btn" :class="{ active: aiManager.voiceSpeed === opt }" @click="aiManager.voiceSpeed = opt">{{ opt }}</button>
+              </div>
+            </div>
+            <div class="am-row">
+              <span class="am-row-label">音色</span>
+              <div class="am-voice-list">
+                <button v-for="opt in aiManagerSettings.voiceTypeOptions" :key="opt.value" class="am-voice-btn" :class="{ active: aiManager.voiceType === opt.value }" @click="aiManager.voiceType = opt.value">
+                  <span class="am-voice-name">{{ opt.value }}</span>
+                  <span class="am-voice-desc">{{ opt.desc }}</span>
+                </button>
+              </div>
+            </div>
+            <div class="am-row">
+              <span class="am-row-label">方言</span>
+              <div class="am-seg am-seg-wrap">
+                <button v-for="opt in aiManagerSettings.dialectOptions" :key="opt" class="am-seg-btn" :class="{ active: aiManager.dialect === opt }" @click="aiManager.dialect = opt">{{ opt }}</button>
+              </div>
+            </div>
+            <div class="am-row">
+              <span class="am-row-label">音量</span>
+              <input type="range" min="0" max="100" v-model.number="aiManager.volume" class="am-slider" />
+              <span class="am-row-value">{{ aiManager.volume }}%</span>
+            </div>
+            <button class="am-preview" @click="previewVoice"><AppIcon name="play" :size="14" color="var(--color-brand)" /> 试听效果</button>
+          </div>
+
+          <!-- 主动关怀频率 -->
+          <div class="am-section">
+            <div class="am-section-title"><AppIcon name="heart-handshake" :size="16" color="var(--color-brand)" /> 主动关怀频率</div>
+            <div class="am-freq-list">
+              <button v-for="opt in aiManagerSettings.careFrequencyOptions" :key="opt.value" class="am-freq-btn" :class="{ active: aiManager.careFrequency === opt.value }" @click="aiManager.careFrequency = opt.value">
+                <span class="am-freq-name">{{ opt.value }}</span>
+                <span class="am-freq-desc">{{ opt.desc }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 关怀选项 -->
+          <div class="am-section">
+            <div class="am-section-title"><AppIcon name="sparkles" :size="16" color="var(--color-brand)" /> 关怀内容</div>
+            <div v-for="(c, idx) in aiCareOptions" :key="c.key" class="am-care">
+              <div class="am-care-info">
+                <div class="am-care-name">{{ c.name }}</div>
+                <div class="am-care-desc">{{ c.desc }}</div>
+              </div>
+              <label class="rs-switch" @click="toggleCareOption(idx)">
+                <input type="checkbox" :checked="c.enabled" readonly />
+                <span class="rs-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 称呼 -->
+          <div class="am-section">
+            <div class="am-section-title"><AppIcon name="user" :size="16" color="var(--color-brand)" /> 个性化称呼</div>
+            <div class="am-row">
+              <span class="am-row-label">小康称呼您为</span>
+              <input v-model="aiManager.nickname" class="am-input" placeholder="如：王奶奶" />
+            </div>
+          </div>
+
+          <button class="am-save" @click="saveAiManager">
+            <AppIcon name="check" :size="16" color="#fff" />
+            <span>保存设置</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
   </div>
 </template>
 
@@ -1588,4 +2426,558 @@ function openInfoDialog(title: string, msg: string) {
 .logout-btn:active {
   transform: translateY(0);
 }
+
+/* ===== 适老化意见反馈弹窗 ===== */
+.feedback-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.feedback-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 85vh;
+  background: #F5F6FA;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: feedbackFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+@keyframes feedbackFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.feedback-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: #fff;
+  border-bottom: 1px solid #E0E3EB;
+}
+.feedback-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1A1A2E;
+}
+.feedback-close {
+  width: 28px;
+  height: 28px;
+  min-height: 28px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.feedback-close:hover { background: rgba(0, 0, 0, 0.06); }
+.feedback-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.feedback-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: var(--space-3);
+  background: rgba(91, 184, 158, 0.08);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.feedback-section-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: 4px;
+}
+.feedback-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.feedback-cat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px;
+  background: #fff;
+  border: 1.5px solid #E0E3EB;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+}
+.feedback-cat-item:hover {
+  border-color: rgba(91, 184, 158, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.12);
+}
+.feedback-cat-item.active {
+  border-color: var(--color-brand);
+  background: rgba(91, 184, 158, 0.08);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.2);
+}
+.feedback-cat-icon {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(91, 184, 158, 0.12);
+  align-items: center;
+  justify-content: center;
+}
+.feedback-cat-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.feedback-cat-desc {
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+.feedback-input,
+.feedback-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #E0E3EB;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: #fff;
+  transition: border 0.2s ease;
+  box-sizing: border-box;
+}
+.feedback-input:focus,
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+.feedback-textarea {
+  resize: vertical;
+  line-height: 1.6;
+  min-height: 140px;
+  font-size: 0.9rem;
+}
+.feedback-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.feedback-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(91, 184, 158, 0.3);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+.feedback-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 184, 158, 0.4);
+}
+.feedback-submit-btn.ghost {
+  background: #fff;
+  color: var(--color-brand-dark);
+  border: 1.5px solid rgba(91, 184, 158, 0.4);
+  box-shadow: none;
+}
+.feedback-case-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.feedback-case-item {
+  padding: 12px;
+  background: #fff;
+  border-radius: 12px;
+  border-left: 4px solid var(--color-brand);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.feedback-case-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.feedback-case-id {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+}
+.feedback-case-status {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.feedback-case-status.已解决 { background: rgba(91, 184, 158, 0.15); color: #3E9A80; }
+.feedback-case-status.协调中 { background: rgba(246, 163, 92, 0.15); color: #E8853A; }
+.feedback-case-status.施工中 { background: rgba(111, 177, 217, 0.15); color: #3E7CB1; }
+.feedback-case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: 6px;
+}
+.feedback-case-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.feedback-case-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.feedback-case-progress {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ============ 7大弹窗共享样式（任务6-12） ============ */
+.ha-mask, .fs-mask, .ai-mask, .od-mask, .mb-mask, .rs-mask, .am-mask {
+  position: fixed; inset: 0; background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; padding: var(--space-4); animation: fadeIn 0.25s;
+}
+.ha-dialog, .fs-dialog, .ai-dialog, .od-dialog, .mb-dialog, .rs-dialog, .am-dialog {
+  background: var(--color-surface-solid);
+  border-radius: 20px; max-width: 560px; width: 100%;
+  max-height: 85vh; display: flex; flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.ha-head, .fs-head, .ai-head, .od-head, .mb-head, .rs-head, .am-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; background: var(--color-surface-solid);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.ha-title, .fs-title, .ai-title, .od-title, .mb-title, .rs-title, .am-title {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-display); font-size: var(--text-lg);
+  font-weight: var(--weight-semibold); color: var(--color-text-primary);
+}
+.ha-close, .fs-close, .ai-close, .od-close, .mb-close, .rs-close, .am-close {
+  border: none; background: transparent; cursor: pointer;
+  width: 32px; height: 32px; min-height: 32px !important;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-tertiary); transition: all 0.2s;
+}
+.ha-close:hover, .fs-close:hover, .ai-close:hover, .od-close:hover,
+.mb-close:hover, .rs-close:hover, .am-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.ha-tabs, .fs-tabs, .ai-tabs, .od-tabs, .mb-tabs {
+  display: flex; gap: 4px; padding: 10px 14px 0;
+  background: var(--color-surface-solid);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto; flex-shrink: 0;
+}
+.ha-tab, .fs-tab, .ai-tab, .od-tab, .mb-tab {
+  flex-shrink: 0; border: none; background: transparent;
+  padding: 8px 14px; cursor: pointer; border-radius: 10px 10px 0 0;
+  font-size: var(--text-sm); color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  white-space: nowrap;
+}
+.ha-tab.active, .fs-tab.active, .ai-tab.active, .od-tab.active, .mb-tab.active {
+  color: var(--color-brand); border-bottom-color: var(--color-brand);
+  font-weight: var(--weight-semibold);
+}
+.ha-body, .fs-body, .ai-body, .od-body, .mb-body, .rs-body, .am-body {
+  flex: 1; overflow-y: auto; padding: 16px 18px; min-height: 0;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeInUp { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+/* === 任务6 健康档案 === */
+.ha-profile-header { display: flex; align-items: center; gap: 12px; padding: 12px; background: linear-gradient(135deg, rgba(91,184,158,0.08), rgba(111,177,217,0.08)); border-radius: 12px; margin-bottom: 12px; }
+.ha-profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--color-brand-lighter), var(--color-accent2-light)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ha-profile-name { font-family: var(--font-display); font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ha-profile-id { font-size: var(--text-xs); color: var(--color-text-tertiary); margin-top: 2px; }
+.ha-profile-score { margin-left: auto; text-align: center; }
+.ha-score-num { font-size: 28px; font-weight: var(--weight-bold); color: var(--color-brand); line-height: 1; }
+.ha-score-label { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+.ha-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ha-info-item { padding: 10px; background: var(--color-bg-tertiary); border-radius: 10px; }
+.ha-info-full { grid-column: span 2; }
+.ha-info-label { display: block; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+.ha-info-val { display: block; font-size: var(--text-sm); color: var(--color-text-primary); font-weight: var(--weight-medium); }
+.ha-tag-safe { color: var(--state-success); }
+.ha-tag-warn { color: var(--state-error); }
+.ha-checkup-card { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 10px; }
+.ha-checkup-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ha-checkup-date { font-weight: var(--weight-semibold); color: var(--color-brand-dark); font-size: var(--text-sm); }
+.ha-checkup-hosp { font-size: 11px; color: var(--color-text-tertiary); }
+.ha-checkup-summary { font-size: var(--text-xs); color: var(--color-text-secondary); margin-bottom: 10px; padding: 6px 10px; background: rgba(91,184,158,0.08); border-radius: 8px; }
+.ha-checkup-items { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ha-checkup-item { padding: 8px; background: var(--color-surface-solid); border-radius: 8px; position: relative; }
+.ha-cu-name { font-size: 11px; color: var(--color-text-tertiary); }
+.ha-cu-value { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); margin: 2px 0; }
+.ha-cu-unit { font-size: 10px; color: var(--color-text-tertiary); font-weight: normal; }
+.ha-cu-normal { font-size: 10px; color: var(--color-text-tertiary); }
+.ha-cu-status { position: absolute; top: 6px; right: 6px; font-size: 10px; padding: 1px 6px; border-radius: 8px; background: var(--color-bg-tertiary); }
+.ha-cu-status.normal { color: var(--state-success); }
+.ha-cu-status.warn { color: var(--state-error); background: rgba(253,101,133,0.12); }
+.ha-record-card { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 10px; }
+.ha-record-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; font-size: 11px; color: var(--color-text-tertiary); }
+.ha-record-date { color: var(--color-brand-dark); font-weight: var(--weight-semibold); }
+.ha-record-diag, .ha-record-prescription, .ha-record-note { display: flex; gap: 6px; align-items: flex-start; font-size: var(--text-xs); color: var(--color-text-secondary); margin-bottom: 4px; }
+.ha-med-tip { display: flex; gap: 6px; align-items: center; padding: 10px; background: rgba(91,184,158,0.08); border-radius: 10px; margin-bottom: 10px; font-size: 11px; color: var(--color-brand-dark); }
+.ha-med-card { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 8px; }
+.ha-med-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ha-med-info { flex: 1; }
+.ha-med-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ha-med-purpose { font-size: 10px; color: var(--color-brand); padding: 1px 6px; background: rgba(91,184,158,0.12); border-radius: 8px; margin-left: 6px; }
+.ha-med-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+.ha-med-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.ha-med-side { text-align: right; }
+.ha-med-dose { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ha-med-status { font-size: 10px; color: var(--state-success); padding: 1px 6px; background: rgba(91,184,158,0.12); border-radius: 8px; }
+
+/* === 任务7 家庭共享 === */
+.fs-intro, .mb-intro, .ai-intro, .rs-intro { display: flex; gap: 6px; align-items: center; padding: 10px; background: rgba(91,184,158,0.08); border-radius: 10px; margin-bottom: 12px; font-size: 11px; color: var(--color-brand-dark); }
+.fs-member { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 8px; }
+.fs-member-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fs-member-info { flex: 1; }
+.fs-member-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.fs-member-relation { font-size: 10px; color: var(--color-text-tertiary); padding: 1px 6px; background: var(--color-bg-secondary); border-radius: 8px; margin-left: 6px; }
+.fs-member-perms { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.fs-perm-chip { font-size: 10px; color: var(--color-brand); padding: 1px 6px; background: rgba(91,184,158,0.1); border-radius: 8px; }
+.fs-member-side { text-align: right; font-size: 11px; }
+.fs-member-status { display: block; }
+.fs-member-status.online { color: var(--state-success); }
+.fs-member-status.offline { color: var(--color-text-tertiary); }
+.fs-member-dist { color: var(--color-text-tertiary); }
+.fs-perm-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+.fs-perm-table th { padding: 8px 4px; text-align: center; color: var(--color-text-tertiary); font-weight: var(--weight-medium); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.fs-perm-table th:first-child { width: 28%; text-align: left; }
+.fs-perm-table th:not(:first-child) { width: 18%; }
+.fs-perm-th { text-align: center; line-height: 1.4; }
+.fs-perm-th :deep(svg), .fs-perm-th svg { display: block; margin: 0 auto 2px; }
+.fs-perm-member { text-align: left; padding: 8px; }
+.fs-perm-avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.fs-perm-member small { color: var(--color-text-tertiary); }
+.fs-perm-cell { text-align: center; padding: 8px; }
+.fs-perm-switch { display: inline-block; width: 36px; height: 20px; position: relative; cursor: pointer; }
+.fs-perm-switch input { opacity: 0; width: 0; height: 0; }
+.fs-perm-slider { position: absolute; inset: 0; background: #ccc; border-radius: 20px; transition: 0.3s; }
+.fs-perm-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: 0.3s; }
+.fs-perm-switch input:checked + .fs-perm-slider { background: var(--color-brand); }
+.fs-perm-switch input:checked + .fs-perm-slider::before { transform: translateX(16px); }
+.fs-invite-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+.fs-invite-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91,184,158,0.15); }
+.fs-invite-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(91,184,158,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fs-invite-info { flex: 1; }
+.fs-invite-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.fs-invite-desc { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+/* === 任务8 AI采访 === */
+.ai-topic-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.ai-topic-card { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--color-bg-tertiary); border-radius: 12px; border: none; cursor: pointer; text-align: left; transition: all 0.2s; width: 100%; }
+.ai-topic-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91,184,158,0.15); }
+.ai-topic-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ai-topic-info { flex: 1; }
+.ai-topic-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ai-topic-desc { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.ai-topic-progress { font-size: 10px; color: var(--color-brand); margin-top: 2px; }
+.ai-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ai-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--color-border); background: var(--color-surface-solid); cursor: pointer; font-size: 12px; color: var(--color-text-primary); transition: all 0.2s; }
+.ai-action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.ai-action-btn.primary { background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); color: #fff; border-color: transparent; }
+.ai-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.ai-feature-card { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; text-align: center; }
+.ai-feature-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(91,184,158,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; }
+.ai-feature-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ai-feature-desc { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; line-height: 1.5; }
+.ai-collab { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; }
+.ai-collab-title { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); margin-bottom: 8px; }
+.ai-collab-list { margin-bottom: 10px; }
+.ai-collab-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--color-border); font-size: 11px; }
+.ai-collab-item:last-child { border-bottom: none; }
+.ai-collab-name { color: var(--color-text-primary); font-weight: var(--weight-medium); }
+.ai-collab-name small { color: var(--color-text-tertiary); margin-left: 4px; }
+.ai-collab-num { color: var(--color-brand); }
+.ai-collab-time { color: var(--color-text-tertiary); }
+.ai-chapter { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 8px; }
+.ai-chapter-no { font-size: 11px; color: var(--color-brand); font-weight: var(--weight-semibold); padding: 2px 8px; background: rgba(91,184,158,0.1); border-radius: 8px; flex-shrink: 0; }
+.ai-chapter-info { flex: 1; }
+.ai-chapter-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.ai-chapter-meta { display: flex; gap: 8px; font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.ai-chapter-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.ai-chapter-status { font-size: 10px; padding: 2px 8px; border-radius: 8px; }
+.ai-chapter-status.done { color: var(--state-success); background: rgba(91,184,158,0.12); }
+.ai-chapter-status.doing { color: #F6A35C; background: rgba(246,163,92,0.12); }
+.ai-chapter-status.todo { color: var(--color-text-tertiary); background: var(--color-bg-secondary); }
+.ai-action-btn { width: 100%; justify-content: center; margin-top: 8px; }
+
+/* === 任务9 我的订单 === */
+.od-card { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 10px; position: relative; }
+.od-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.od-card-id { font-size: 11px; color: var(--color-text-tertiary); }
+.od-card-type { font-size: 10px; color: var(--color-brand); padding: 1px 6px; background: rgba(91,184,158,0.1); border-radius: 8px; }
+.od-card-status { margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 8px; }
+.od-card-status.done { color: var(--state-success); background: rgba(91,184,158,0.12); }
+.od-card-status.doing { color: #F6A35C; background: rgba(246,163,92,0.12); }
+.od-card-info { margin-bottom: 8px; }
+.od-card-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.od-card-spec { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.od-card-meta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; margin-right: 10px; }
+.od-card-amount { position: absolute; top: 12px; right: 14px; font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--state-error); }
+.od-card-actions { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid var(--color-border); }
+.od-action { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 16px; border: 1px solid var(--color-border); background: var(--color-surface-solid); cursor: pointer; font-size: 11px; color: var(--color-text-secondary); transition: all 0.2s; }
+.od-action:hover { transform: translateY(-1px); }
+.od-action.primary { background: var(--color-brand); color: #fff; border-color: transparent; }
+
+/* === 任务10 会员权益 === */
+.mb-current { padding: 14px; background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,215,0,0.04)); border-radius: 12px; margin-bottom: 14px; }
+.mb-current-level { font-size: var(--text-base); color: var(--color-text-primary); margin-bottom: 8px; }
+.mb-progress-bar { height: 8px; background: var(--color-bg-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 4px; }
+.mb-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD700, #FFA500); border-radius: 8px; transition: width 0.5s; }
+.mb-progress-text { font-size: 11px; color: var(--color-text-tertiary); }
+.mb-level-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mb-level-card { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; position: relative; }
+.mb-level-card.current { border: 2px solid #FFD700; }
+.mb-level-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.mb-level-name { font-family: var(--font-display); font-size: var(--text-base); font-weight: var(--weight-bold); }
+.mb-level-tag { font-size: 10px; color: #fff; background: #FFD700; padding: 1px 6px; border-radius: 8px; }
+.mb-level-threshold { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 6px; }
+.mb-level-benefits { font-size: 11px; color: var(--color-text-secondary); }
+.mb-level-benefit { display: flex; align-items: center; gap: 4px; margin: 2px 0; }
+.mb-plan-grid { display: flex; flex-direction: column; gap: 10px; }
+.mb-plan-card { padding: 16px; background: var(--color-bg-tertiary); border-radius: 14px; position: relative; border: 2px solid transparent; }
+.mb-plan-card.popular { border-color: var(--color-brand); }
+.mb-plan-badge { position: absolute; top: -8px; right: 12px; font-size: 10px; color: #fff; background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); padding: 2px 10px; border-radius: 10px; }
+.mb-plan-name { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-text-primary); }
+.mb-plan-price { font-size: 24px; font-weight: var(--weight-bold); color: var(--color-brand); margin: 6px 0; }
+.mb-plan-price small { font-size: 11px; color: var(--color-text-tertiary); font-weight: normal; }
+.mb-plan-features { margin-bottom: 10px; }
+.mb-plan-feature { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-text-secondary); margin: 3px 0; }
+.mb-plan-btn { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid var(--color-brand); background: var(--color-surface-solid); color: var(--color-brand); cursor: pointer; font-size: var(--text-sm); }
+.mb-plan-btn.primary { background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); color: #fff; }
+.mb-points-summary { padding: 16px; background: linear-gradient(135deg, rgba(91,184,158,0.12), rgba(91,184,158,0.04)); border-radius: 12px; text-align: center; margin-bottom: 14px; }
+.mb-points-num { font-size: 32px; font-weight: var(--weight-bold); color: var(--color-brand); }
+.mb-points-label { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+.mb-points-section-title { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); margin: 14px 0 8px; }
+.mb-points-shop { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mb-points-item { padding: 10px; background: var(--color-bg-tertiary); border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.mb-points-icon { width: 36px; height: 36px; border-radius: 50%; background: rgba(91,184,158,0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
+.mb-points-info { flex: 1; }
+.mb-points-name { font-size: 11px; font-weight: var(--weight-medium); color: var(--color-text-primary); }
+.mb-points-original { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+.mb-points-side { margin-top: 6px; }
+.mb-points-cost { font-size: 11px; color: var(--color-brand); font-weight: var(--weight-semibold); }
+.mb-points-btn { margin-top: 4px; padding: 4px 12px; border-radius: 12px; border: none; background: var(--color-brand); color: #fff; cursor: pointer; font-size: 11px; }
+.mb-points-history { padding: 8px 10px; background: var(--color-bg-tertiary); border-radius: 10px; }
+.mb-points-row { display: flex; gap: 8px; padding: 4px 0; font-size: 11px; border-bottom: 1px solid var(--color-border); }
+.mb-points-row:last-child { border-bottom: none; }
+.mb-points-date { color: var(--color-text-tertiary); width: 70px; flex-shrink: 0; }
+.mb-points-desc { flex: 1; color: var(--color-text-primary); }
+.mb-points-change { color: var(--state-success); font-weight: var(--weight-semibold); }
+
+/* === 任务11 提醒设置 === */
+.rs-item { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 8px; }
+.rs-item-head { display: flex; align-items: center; gap: 10px; }
+.rs-item-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(91,184,158,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rs-item-info { flex: 1; }
+.rs-item-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.rs-item-freq { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.rs-switch { display: inline-block; width: 40px; height: 22px; position: relative; cursor: pointer; flex-shrink: 0; }
+.rs-switch input { opacity: 0; width: 0; height: 0; }
+.rs-slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; transition: 0.3s; }
+.rs-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.rs-switch input:checked + .rs-slider { background: var(--color-brand); }
+.rs-switch input:checked + .rs-slider::before { transform: translateX(18px); }
+.rs-item-methods { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--color-border); flex-wrap: wrap; }
+.rs-method-label { font-size: 11px; color: var(--color-text-tertiary); }
+.rs-method { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--color-border); background: var(--color-surface-solid); cursor: pointer; font-size: 11px; color: var(--color-text-secondary); }
+.rs-method.active { background: var(--color-brand); color: #fff; border-color: transparent; }
+.rs-dnd { display: flex; align-items: center; gap: 10px; padding: 12px; background: linear-gradient(135deg, rgba(111,177,217,0.08), rgba(111,177,217,0.04)); border-radius: 12px; margin: 10px 0; }
+.rs-dnd-head { display: flex; align-items: center; gap: 10px; flex: 1; }
+.rs-dnd-info { flex: 1; }
+.rs-dnd-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.rs-dnd-time { font-size: 11px; color: var(--color-text-tertiary); }
+.rs-save, .am-save { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark)); color: #fff; cursor: pointer; font-size: var(--text-base); font-weight: var(--weight-semibold); margin-top: 10px; }
+.rs-save:hover, .am-save:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(91,184,158,0.3); }
+
+/* === 任务12 AI管家设置 === */
+.am-section { padding: 12px; background: var(--color-bg-tertiary); border-radius: 12px; margin-bottom: 10px; }
+.am-section-title { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); margin-bottom: 10px; }
+.am-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.am-row-label { font-size: var(--text-sm); color: var(--color-text-secondary); min-width: 70px; }
+.am-row-value { font-size: var(--text-sm); color: var(--color-brand); font-weight: var(--weight-semibold); }
+.am-seg { display: inline-flex; background: var(--color-bg-secondary); border-radius: 10px; padding: 2px; }
+.am-seg-wrap { flex-wrap: wrap; }
+.am-seg-btn { padding: 6px 12px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-size: 11px; color: var(--color-text-secondary); transition: all 0.2s; white-space: nowrap; }
+.am-seg-btn.active { background: var(--color-brand); color: #fff; }
+.am-voice-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; }
+.am-voice-btn { padding: 8px 10px; border: 1px solid var(--color-border); background: var(--color-surface-solid); border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.2s; }
+.am-voice-btn.active { border-color: var(--color-brand); background: rgba(91,184,158,0.08); }
+.am-voice-name { display: block; font-size: 11px; font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.am-voice-desc { display: block; font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+.am-slider { flex: 1; accent-color: var(--color-brand); }
+.am-preview { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 16px; border: 1px solid var(--color-brand); background: var(--color-surface-solid); color: var(--color-brand); cursor: pointer; font-size: 11px; }
+.am-freq-list { display: flex; flex-direction: column; gap: 6px; }
+.am-freq-btn { padding: 10px; border: 1px solid var(--color-border); background: var(--color-surface-solid); border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.2s; }
+.am-freq-btn.active { border-color: var(--color-brand); background: rgba(91,184,158,0.08); }
+.am-freq-name { display: block; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+.am-freq-desc { display: block; font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.am-care { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); }
+.am-care:last-child { border-bottom: none; }
+.am-care-info { flex: 1; }
+.am-care-name { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text-primary); }
+.am-care-desc { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.am-input { flex: 1; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: 8px; font-size: var(--text-sm); background: var(--color-surface-solid); }
 </style>

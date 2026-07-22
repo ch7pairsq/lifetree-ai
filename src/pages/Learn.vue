@@ -12,6 +12,7 @@ import {
   elderlyCourses,
   photoRepair,
   companionSuggestions,
+  puzzleGames,
 } from '@/mock'
 
 const route = useRoute()
@@ -163,6 +164,105 @@ onMounted(() => {
     if (target) target.scrollIntoView({ behavior: 'smooth' })
   })
 })
+
+// ===== 益智游戏模块 =====
+const showGameDialog = ref(false)
+const activeGame = ref<typeof puzzleGames[number] | null>(null)
+const gameScore = ref(0)
+const gameTimeLeft = ref(0)
+const gameRunning = ref(false)
+const gameMoles = ref<boolean[]>(Array(9).fill(false))
+const gameHistory = ref<{ score: number; time: string } | null>(null)
+let gameTimer: ReturnType<typeof setInterval> | null = null
+let moleTimer: ReturnType<typeof setTimeout> | null = null
+
+function openGame(game: typeof puzzleGames[number]) {
+  activeGame.value = game
+  showGameDialog.value = true
+  gameScore.value = 0
+  gameTimeLeft.value = 30
+  gameRunning.value = false
+  gameMoles.value = Array(9).fill(false)
+  gameHistory.value = null
+}
+
+function startGame() {
+  if (!activeGame.value) return
+  gameScore.value = 0
+  gameTimeLeft.value = 30
+  gameRunning.value = true
+  gameMoles.value = Array(9).fill(false)
+  gameTimer = setInterval(() => {
+    gameTimeLeft.value -= 1
+    if (gameTimeLeft.value <= 0) {
+      endGame()
+    }
+  }, 1000)
+  showMole()
+}
+
+function showMole() {
+  if (!gameRunning.value) return
+  const idx = Math.floor(Math.random() * 9)
+  gameMoles.value = Array(9).fill(false)
+  gameMoles.value[idx] = true
+  moleTimer = setTimeout(() => {
+    gameMoles.value = Array(9).fill(false)
+    moleTimer = setTimeout(showMole, 200 + Math.random() * 400)
+  }, 600 + Math.random() * 400)
+}
+
+function hitMole(idx: number) {
+  if (!gameRunning.value) return
+  if (gameMoles.value[idx]) {
+    gameScore.value += 1
+    gameMoles.value[idx] = false
+  }
+}
+
+function endGame() {
+  gameRunning.value = false
+  if (gameTimer) { clearInterval(gameTimer); gameTimer = null }
+  if (moleTimer) { clearTimeout(moleTimer); moleTimer = null }
+  gameMoles.value = Array(9).fill(false)
+  const now = new Date()
+  gameHistory.value = {
+    score: gameScore.value,
+    time: `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`,
+  }
+}
+
+function closeGame() {
+  endGame()
+  showGameDialog.value = false
+}
+
+// 一键分享
+const showShareSheet = ref(false)
+function openShareSheet() {
+  showShareSheet.value = true
+}
+// 从游戏卡片直接打开分享面板（不进入游戏）
+function openGameShare(game: typeof puzzleGames[number]) {
+  activeGame.value = game
+  gameHistory.value = null
+  showShareSheet.value = true
+}
+function shareToWeChatMoments() {
+  if (!activeGame.value) return
+  const text = activeGame.value.shareLine + (gameHistory.value ? ` 本局得分：${gameHistory.value.score}分` : '')
+  // 模拟分享到微信朋友圈
+  showToast(`已复制分享文案，正在跳转微信朋友圈...\n\n${text}`)
+  if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {})
+  showShareSheet.value = false
+}
+function shareToWeChatChat() {
+  if (!activeGame.value) return
+  const text = activeGame.value.shareLine + (gameHistory.value ? ` 本局得分：${gameHistory.value.score}分` : '')
+  showToast(`已复制分享文案，正在跳转微信对话...\n\n${text}`)
+  if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {})
+  showShareSheet.value = false
+}
 </script>
 
 <template>
@@ -531,6 +631,44 @@ onMounted(() => {
       </div>
     </section>
 
+    <!-- 益智游戏：锻炼反应能力+手指协调，含搞笑元素与一键分享 -->
+    <section class="block">
+      <div class="section-title-row">
+        <div class="section-title"><AppIcon name="gamepad" :size="18" /> 益智游戏</div>
+        <span class="more-link" @click="showToast('更多益智游戏开发中...')">更多</span>
+      </div>
+      <p class="block-sub">锻炼反应能力与手指协调，老少皆宜，玩出好心情，玩出好脑力</p>
+      <div class="game-grid">
+        <div
+          v-for="g in puzzleGames"
+          :key="g.id"
+          class="game-card"
+          @click="openGame(g)"
+        >
+          <div class="game-banner" :style="{ background: g.bg }">
+            <AppIcon :name="g.icon" :size="32" :color="'#fff'" />
+            <span class="game-fun-tag">{{ g.funTag }}</span>
+          </div>
+          <div class="game-body">
+            <div class="game-name">{{ g.name }}</div>
+            <div class="game-desc">{{ g.desc }}</div>
+            <div class="game-meta">
+              <span class="game-skill"><AppIcon name="zap" :size="11" /> {{ g.skill }} · {{ g.skillLevel }}</span>
+              <span class="game-players"><AppIcon name="users" :size="11" /> {{ g.players }}人在玩</span>
+            </div>
+          </div>
+          <div class="game-card-actions">
+            <button class="game-play-btn" @click.stop="openGame(g)">
+              <AppIcon name="play" :size="12" :color="'#fff'" /> 开始
+            </button>
+            <button class="game-share-btn" @click.stop="openGameShare(g)">
+              <AppIcon name="share" :size="12" :color="'var(--color-brand)'" /> 分享
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 赛博养老 -->
     <section class="block">
       <div class="section-title-row">
@@ -673,6 +811,131 @@ onMounted(() => {
               <AppIcon name="sparkles" :size="14" :color="'#fff'" /> 开始修复 · 生成相册
             </button>
           </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 益智游戏弹窗 -->
+    <transition name="fade">
+      <div v-if="showGameDialog && activeGame" class="game-dialog-mask" @click="closeGame">
+        <div class="game-dialog" @click.stop>
+          <div class="game-dialog-head" :style="{ background: activeGame.bg }">
+            <div class="game-dialog-icon">
+              <AppIcon :name="activeGame.icon" :size="28" :color="'#fff'" />
+            </div>
+            <div class="game-dialog-title-wrap">
+              <div class="game-dialog-name">{{ activeGame.name }}</div>
+              <div class="game-dialog-meta">
+                <span class="game-dialog-skill">{{ activeGame.skill }} · {{ activeGame.skillLevel }}</span>
+                <span class="game-dialog-fun">{{ activeGame.funTag }}</span>
+              </div>
+            </div>
+            <button class="game-dialog-close" @click="closeGame">
+              <AppIcon name="x" :size="20" :color="'#fff'" />
+            </button>
+          </div>
+
+          <div class="game-dialog-body">
+            <div class="game-desc-row">
+              <AppIcon name="info" :size="13" :color="'var(--color-brand)'" />
+              <span>{{ activeGame.desc }}</span>
+            </div>
+
+            <!-- 游戏区（打地鼠统一玩法） -->
+            <div class="game-stage">
+              <div class="game-status-bar">
+                <span class="game-stat">
+                  <AppIcon name="zap" :size="14" :color="'var(--color-brand)'" />
+                  <span>得分：<b>{{ gameScore }}</b></span>
+                </span>
+                <span class="game-stat">
+                  <AppIcon name="clock" :size="14" :color="'var(--color-brand)'" />
+                  <span>剩余：<b>{{ gameTimeLeft }}s</b></span>
+                </span>
+              </div>
+
+              <div v-if="!gameRunning && !gameHistory" class="game-ready">
+                <div class="game-ready-icon" :style="{ background: activeGame.bg }">
+                  <AppIcon :name="activeGame.icon" :size="48" :color="'#fff'" />
+                </div>
+                <div class="game-ready-title">准备好了吗？</div>
+                <div class="game-ready-desc">30秒内点击冒出的图标，每点中一个+1分<br/>锻炼反应速度，老人也能玩出花～</div>
+                <button class="game-start-btn" @click="startGame">
+                  <AppIcon name="play" :size="16" :color="'#fff'" /> 开始游戏
+                </button>
+              </div>
+
+              <div v-else-if="gameRunning" class="mole-grid">
+                <div
+                  v-for="(m, idx) in gameMoles"
+                  :key="idx"
+                  class="mole-cell"
+                  :class="{ active: m }"
+                  @click="hitMole(idx)"
+                >
+                  <span v-if="m" class="mole-icon" :style="{ background: activeGame.bg }">
+                    <AppIcon :name="activeGame.icon" :size="28" :color="'#fff'" />
+                  </span>
+                </div>
+              </div>
+
+              <div v-else-if="gameHistory" class="game-result">
+                <div class="result-trophy">
+                  <AppIcon name="trophy" :size="56" :color="'#F6A35C'" />
+                </div>
+                <div class="result-title">游戏结束！</div>
+                <div class="result-score">本局得分 <b>{{ gameHistory.score }}</b> 分</div>
+                <div class="result-time">挑战时间：{{ gameHistory.time }}</div>
+                <div class="result-fun-tip">
+                  <AppIcon name="sparkles" :size="13" :color="'var(--color-brand)'" />
+                  <span>{{ activeGame.shareLine }}</span>
+                </div>
+                <div class="result-actions">
+                  <button class="result-btn primary" @click="startGame">
+                    <AppIcon name="refresh-cw" :size="14" :color="'#fff'" /> 再来一局
+                  </button>
+                  <button class="result-btn ghost" @click="openShareSheet">
+                    <AppIcon name="send" :size="14" :color="'var(--color-brand)'" /> 一键分享
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 历史最佳 -->
+            <div class="game-tip-row">
+              <AppIcon name="shield-check" :size="13" :color="'var(--color-brand)'" />
+              <span>适度游戏健脑，每次不超过15分钟，注意休息眼睛</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 分享面板 -->
+    <transition name="fade">
+      <div v-if="showShareSheet" class="share-sheet-mask" @click="showShareSheet = false">
+        <div class="share-sheet" @click.stop>
+          <div class="share-sheet-handle"></div>
+          <div class="share-sheet-title">分享到</div>
+          <div class="share-sheet-grid">
+            <button class="share-sheet-item" @click="shareToWeChatMoments">
+              <span class="share-sheet-icon moments">
+                <AppIcon name="image" :size="26" :color="'#fff'" />
+              </span>
+              <span>微信朋友圈</span>
+            </button>
+            <button class="share-sheet-item" @click="shareToWeChatChat">
+              <span class="share-sheet-icon chat">
+                <AppIcon name="message-circle" :size="26" :color="'#fff'" />
+              </span>
+              <span>微信对话</span>
+            </button>
+          </div>
+          <div class="share-sheet-preview" v-if="activeGame">
+            <div class="share-preview-title">分享文案预览</div>
+            <div class="share-preview-text">{{ activeGame.shareLine }}<span v-if="gameHistory"> 本局得分：{{ gameHistory.score }}分</span></div>
+          </div>
+          <button class="share-sheet-cancel" @click="showShareSheet = false">取消</button>
         </div>
       </div>
     </transition>
@@ -2400,5 +2663,531 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.04);
   padding: 1px 6px;
   border-radius: 6px;
+}
+
+/* ===== 益智游戏卡片 ===== */
+.game-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.game-card {
+  background: var(--color-surface-solid);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(91, 184, 158, 0.15);
+}
+.game-banner {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.game-fun-tag {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1A1A2E;
+  backdrop-filter: blur(4px);
+}
+.game-body {
+  padding: 10px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.game-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+.game-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  flex: 1;
+}
+.game-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.66rem;
+  color: var(--color-text-tertiary);
+}
+.game-skill, .game-players {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.game-card-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 12px;
+}
+.game-play-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(91, 184, 158, 0.3);
+  transition: all 0.2s ease;
+}
+.game-play-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.4);
+}
+.game-share-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: var(--color-surface-solid);
+  color: var(--color-brand);
+  border: 1.5px solid var(--color-brand);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+.game-share-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(91, 184, 158, 0.08);
+  box-shadow: 0 4px 12px rgba(91, 184, 158, 0.15);
+}
+
+/* ===== 游戏弹窗 ===== */
+.game-dialog-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.game-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 90vh;
+  background: #F5F6FA;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  animation: gameFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes gameFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.game-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--space-4);
+  color: #fff;
+}
+.game-dialog-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-dialog-title-wrap { flex: 1; }
+.game-dialog-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.game-dialog-meta {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.7rem;
+}
+.game-dialog-skill, .game-dialog-fun {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+}
+.game-dialog-close {
+  width: 32px;
+  height: 32px;
+  min-height: 32px !important;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.game-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.game-desc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(91, 184, 158, 0.08);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.game-stage {
+  background: #fff;
+  border-radius: 16px;
+  padding: var(--space-3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.game-status-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 12px;
+  border-bottom: 1px dashed #E0E3EB;
+  margin-bottom: 12px;
+}
+.game-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+.game-stat b {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin: 0 2px;
+}
+.game-ready {
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.game-ready-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 6px 20px rgba(91, 184, 158, 0.25);
+}
+.game-ready-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+.game-ready-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.game-start-btn {
+  margin-top: 10px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(91, 184, 158, 0.35);
+  min-height: 44px;
+  transition: all 0.2s ease;
+}
+.game-start-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 184, 158, 0.45);
+}
+.mole-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+}
+.mole-cell {
+  aspect-ratio: 1 / 1;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 2px solid transparent;
+}
+.mole-cell.active {
+  background: rgba(91, 184, 158, 0.12);
+}
+.mole-icon {
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: molePop 0.2s ease-out;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+@keyframes molePop {
+  from { transform: scale(0.3); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.game-result {
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.result-trophy {
+  margin-bottom: 4px;
+}
+.result-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+.result-score {
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+.result-score b {
+  font-size: 1.5rem;
+  color: #F6A35C;
+  font-family: var(--font-display);
+  margin: 0 4px;
+}
+.result-time {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+}
+.result-fun-tip {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(246, 163, 92, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #8a4a14;
+  line-height: 1.5;
+  max-width: 95%;
+}
+.result-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+.result-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+.result-btn.primary {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(91, 184, 158, 0.3);
+}
+.result-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 184, 158, 0.4);
+}
+.result-btn.ghost {
+  background: #fff;
+  color: var(--color-brand-dark);
+  border: 1.5px solid rgba(91, 184, 158, 0.4);
+}
+.game-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== 分享面板 ===== */
+.share-sheet-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 52, 54, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.share-sheet {
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: var(--space-4);
+  animation: shareSheetUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes shareSheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.share-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #E0E3EB;
+  border-radius: 2px;
+  margin: 0 auto var(--space-3);
+}
+.share-sheet-title {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  font-family: var(--font-display);
+}
+.share-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.share-sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-3);
+  background: rgba(91, 184, 158, 0.04);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+.share-sheet-item:hover {
+  border-color: rgba(91, 184, 158, 0.3);
+  background: rgba(91, 184, 158, 0.08);
+  transform: translateY(-1px);
+}
+.share-sheet-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.share-sheet-icon.moments {
+  background: linear-gradient(135deg, #FFB199, #FD6585);
+}
+.share-sheet-icon.chat {
+  background: linear-gradient(135deg, #C8F0E0, #5BB89E);
+}
+.share-sheet-preview {
+  padding: var(--space-3);
+  background: rgba(91, 184, 158, 0.05);
+  border-radius: 12px;
+  margin-bottom: var(--space-3);
+}
+.share-preview-title {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.share-preview-text {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+.share-sheet-cancel {
+  width: 100%;
+  padding: 12px;
+  background: #F5F6FA;
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.share-sheet-cancel:hover {
+  background: #E0E3EB;
 }
 </style>

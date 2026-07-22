@@ -448,6 +448,13 @@ export const menuGroups = [
       { icon: 'settings', text: '系统设置', badge: 0 },
     ],
   },
+  {
+    title: '反馈',
+    items: [
+      { icon: 'message-square', text: '适老化意见反馈', badge: 0 },
+      { icon: 'clipboard-list', text: '我的反馈进度', badge: 2 },
+    ],
+  },
 ]
 
 export const uiModes = [
@@ -571,14 +578,40 @@ export const lifeServices = [
     key: 'shop',
     icon: 'shopping-bag',
     title: '康养商城',
-    desc: '保健品、辅具、护理用品',
+    desc: '安心食品、助老用品',
     color: 'rgba(212, 132, 168, 0.15)',
     items: [
-      { name: '钙片+维生素D组合', price: 128, desc: '中老年骨骼健康套装' },
-      { name: '防滑浴室地垫', price: 39, desc: '加厚防滑，居家防跌倒' },
-      { name: '智能血压计', price: 269, desc: '一键测量，数据自动同步' },
+      { name: '钙片+维生素D组合', price: 128, desc: '中老年骨骼健康套装', category: 'food' },
+      { name: '防滑浴室地垫', price: 39, desc: '加厚防滑，居家防跌倒', category: 'tool' },
+      { name: '智能血压计', price: 269, desc: '一键测量，数据自动同步', category: 'tool' },
     ],
     moreItems: [
+      { name: '一键呼叫手环', price: 359, desc: 'GPS定位+SOS呼叫，子女远程查看', category: 'tool' },
+      { name: '适老放大镜灯具', price: 89, desc: 'LED放大镜，看报看药瓶更清晰', category: 'tool' },
+      { name: '防走失定位徽章', price: 199, desc: '轻便胸针，室内外精准定位', category: 'tool' },
+      { name: '电动升降适老椅', price: 2680, desc: '助力起坐，保护膝盖腰椎', category: 'tool' },
+      { name: '加粗握柄餐具套装', price: 69, desc: '适老握感，关节炎患者友好', category: 'tool' },
+      { name: '夜光防滑拖鞋', price: 49, desc: '夜间发光，防滑减震', category: 'tool' },
+      { name: '智能药盒（7日）', price: 159, desc: '按时分药，漏服提醒', category: 'tool' },
+      { name: '便携式制氧机', price: 1980, desc: '轻巧静音，外出可用', category: 'tool' },
+    ],
+    // 安心食品：保健品 + 食品
+    foodItems: [
+      { name: '钙片+维生素D组合', price: 128, desc: '中老年骨骼健康套装' },
+      { name: '深海鱼油胶囊', price: 158, desc: '调节血脂，保护心脑血管' },
+      { name: '复合维生素B族', price: 89, desc: '缓解疲劳，营养神经' },
+      { name: '中老年奶粉', price: 168, desc: '高钙低脂，易冲泡好吸收' },
+      { name: '燕麦麸皮粉', price: 49, desc: '高纤维控糖，早餐代餐好选择' },
+      { name: '黑芝麻丸', price: 39, desc: '古法九蒸九晒，养发润肠' },
+      { name: '枸杞原浆', price: 79, desc: '宁夏中宁鲜果原榨，开盖即饮' },
+      { name: '无糖燕麦饼干', price: 29, desc: '糖尿病友好，酥脆好吃' },
+      { name: '银耳莲子羹', price: 35, desc: '即食罐装，滋阴润肺' },
+      { name: '三七粉超细', price: 168, desc: '云南文山三七，温水冲服' },
+    ],
+    // 助老用品：辅具 + 护理用品
+    toolItems: [
+      { name: '防滑浴室地垫', price: 39, desc: '加厚防滑，居家防跌倒' },
+      { name: '智能血压计', price: 269, desc: '一键测量，数据自动同步' },
       { name: '一键呼叫手环', price: 359, desc: 'GPS定位+SOS呼叫，子女远程查看' },
       { name: '适老放大镜灯具', price: 89, desc: 'LED放大镜，看报看药瓶更清晰' },
       { name: '防走失定位徽章', price: 199, desc: '轻便胸针，室内外精准定位' },
@@ -587,7 +620,25 @@ export const lifeServices = [
       { name: '夜光防滑拖鞋', price: 49, desc: '夜间发光，防滑减震' },
       { name: '智能药盒（7日）', price: 159, desc: '按时分药，漏服提醒' },
       { name: '便携式制氧机', price: 1980, desc: '轻巧静音，外出可用' },
+      { name: '成人纸尿裤（整箱）', price: 159, desc: '日本进口吸水芯，亲肤透气' },
+      { name: '防褥疮气垫床', price: 680, desc: '交替充气，长期卧床必备' },
     ],
+  },
+  {
+    key: 'herb',
+    icon: 'leaf',
+    title: '中药百科',
+    desc: '中药知识 · 经典方剂 · 中药用品',
+    color: 'rgba(91, 184, 158, 0.15)',
+    items: [],
+  },
+  {
+    key: 'sleep',
+    icon: 'moon',
+    title: '安稳睡眠',
+    desc: '睡眠知识 · 助眠方案 · 助眠产品',
+    color: 'rgba(111, 177, 217, 0.15)',
+    items: [],
   },
   {
     key: 'retrofit',
@@ -616,12 +667,18 @@ export const medicalOrders = [
 export const medicalOrderSummary = '王奶奶的医嘱汇总：\n\n1. 高血压：每日早晨饭后服用降压药1片，低盐饮食。\n2. 糖尿病：每日3次饭前30分钟服用降糖药，控制主食。\n3. 骨质疏松：每日晚饭后服用钙片2片，多晒太阳。\n\n下次复诊：\n· 高血压：8月15日 协和医院 张主任\n· 糖尿病：8月02日 协和医院 王医生\n· 骨质疏松：10月10日 社区医院 李医生'
 
 // 小康陪伴：实时记录能力展示（关火/钥匙/生日提醒等）
+// 包含生日、药物、银行卡、证件、联系人、回忆录、照片、视频等敏感数据加密存储
 export const companionMemoryRecords = [
   { icon: 'flame', time: '今天 11:32', title: '关火提醒已记录', desc: '您说"粥煮好了关火"，小康已设置15分钟后提醒您关火', tag: '厨房安全' },
   { icon: 'key', time: '今天 09:15', title: '钥匙位置已记录', desc: '您说"钥匙放在电视柜抽屉里"，已记入备忘，下次找不到可问小康', tag: '生活备忘' },
-  { icon: 'cake', time: '昨天 20:00', title: '小芳生日提醒', desc: '已记录女儿小芳生日为8月8日，将在8月7日提前提醒您准备', tag: '家庭纪念' },
-  { icon: 'pill', time: '昨天 12:30', title: '用药记录', desc: '今日午间消炎药已服用，下次钙片19:00提醒', tag: '用药管理' },
-  { icon: 'phone', time: '前天 15:00', title: '重要事项备忘', desc: '社区通知下周三体检，已加入日程并设置当日提醒', tag: '日程提醒' },
+  { icon: 'cake', time: '昨天 20:00', title: '生日提醒（加密存储）', desc: '已记录女儿小芳生日为8月8日，将在8月7日提前提醒您准备。家庭纪念日信息已本地加密保存', tag: '家庭纪念' },
+  { icon: 'pill', time: '昨天 12:30', title: '用药记录（加密存储）', desc: '今日午间消炎药已服用，下次钙片19:00提醒。用药数据仅本地存储，不会上传', tag: '用药管理' },
+  { icon: 'phone', time: '前天 15:00', title: '联系人通讯录（加密存储）', desc: '已记录家人、医生、社区共12位联系人。联系方式采用本地加密存储，仅本人与授权子女可查看', tag: '联系人' },
+  { icon: 'credit-card', time: '前天 14:00', title: '银行卡号（加密存储）', desc: '已安全保存3张银行卡尾号（****8821 / ****6639 / ****0715），完整卡号采用银行级AES-256加密，仅本人指纹可解锁查看', tag: '敏感信息' },
+  { icon: 'shield', time: '前天 13:30', title: '证件信息（加密存储）', desc: '身份证、医保卡、户口本等6张证件已扫描存档，全部本地加密保存，仅本人与授权子女可查看', tag: '敏感信息' },
+  { icon: 'book-heart', time: '前天 11:00', title: '回忆录草稿（加密存储）', desc: '"我与老伴相识"等3章回忆录草稿已自动保存，文字内容本地加密，永不外传', tag: '回忆录' },
+  { icon: 'image', time: '3天前 16:20', title: '老照片相册（加密存储）', desc: '已收录1970-2020年家庭照片86张，含AI修复版12张。照片库本地加密，分享前需本人授权', tag: '照片视频' },
+  { icon: 'film', time: '3天前 16:00', title: '家庭视频（加密存储）', desc: '小芳周岁、退休欢送会等8段视频已安全保存，视频文件本地加密存储，不会上传云端', tag: '照片视频' },
   { icon: 'shopping-cart', time: '前天 10:20', title: '购物清单', desc: '您说"买点鸡蛋和牛奶"，已生成购物清单，去超市时可调出', tag: '生活备忘' },
 ]
 
@@ -643,6 +700,126 @@ export const memoirChapters = [
   { no: '第四章', title: '成家与育儿', status: '待开始', words: 0, updated: '' },
   { no: '第五章', title: '退休新生活', status: '待开始', words: 0, updated: '' },
 ]
+
+// ===== 益智游戏（锻炼反应能力、手指协调，含搞笑与社交传播） =====
+export const puzzleGames = [
+  {
+    id: 'whack-mole',
+    name: '打地鼠',
+    icon: 'hammer',
+    bg: 'linear-gradient(135deg, #FFD3A5, #FD6585)',
+    desc: '快速点击冒出的地鼠，锻炼反应速度',
+    skill: '反应能力',
+    skillLevel: '入门',
+    funTag: '解压搞笑',
+    players: 12856,
+    shareLine: '我在「生命树」打地鼠60秒得了92分，老胳膊老腿还能这么利索！你也来挑战～',
+  },
+  {
+    id: 'finger-dance',
+    name: '手指舞',
+    icon: 'hand',
+    bg: 'linear-gradient(135deg, #C8F0E0, #5BB89E)',
+    desc: '按节奏点击屏幕左右区，锻炼手指协调',
+    skill: '手指协调',
+    skillLevel: '进阶',
+    funTag: '魔性上头',
+    players: 8742,
+    shareLine: '手指舞连击36下不卡壳！谁说老年人反应慢？来比一比～',
+  },
+  {
+    id: 'memory-match',
+    name: '记忆翻牌',
+    icon: 'brain',
+    bg: 'linear-gradient(135deg, #FCE58A, #F6A35C)',
+    desc: '翻牌配对相同图案，锻炼短时记忆',
+    skill: '记忆力',
+    skillLevel: '入门',
+    funTag: '脑力激荡',
+    players: 9521,
+    shareLine: '记忆翻牌10对全中0失误！年轻时打牌的底子还在～不服来战',
+  },
+  {
+    id: 'color-tap',
+    name: '颜色快拍',
+    icon: 'palette',
+    bg: 'linear-gradient(135deg, #B8A0F2, #8B6FE0)',
+    desc: '屏幕出现指定颜色立即点击，锻炼反应与辨色',
+    skill: '反应能力',
+    skillLevel: '进阶',
+    funTag: '眼花缭乱',
+    players: 6843,
+    shareLine: '颜色快拍差点把我看花眼，最后反杀拿了A+！老人也能玩出花',
+  },
+]
+
+// ===== 适老化意见反馈：分类与示例 =====
+export const feedbackCategories = [
+  { id: 'transport', icon: 'bus', name: '公共交通', desc: '公交车台阶过高、站牌字小、无障碍设施缺失等' },
+  { id: 'public', icon: 'building', name: '公共场所', desc: '商场/医院入口台阶、扶手、卫生间适老化等' },
+  { id: 'community', icon: 'home', name: '社区环境', desc: '小区路灯、坡道、电梯、休闲座椅等' },
+  { id: 'digital', icon: 'smartphone', name: '数字鸿沟', desc: 'App字体小、扫码点餐、健康码等智能应用障碍' },
+  { id: 'service', icon: 'heart-handshake', name: '服务态度', desc: '窗口工作人员耐心、老年人绿色通道等' },
+  { id: 'other', icon: 'message-square', name: '其他建议', desc: '任何利于老年人生活的改造建议' },
+]
+
+// 反馈处理进度示例
+export const feedbackCases = [
+  { id: 'FB20260710', category: '公共交通', location: '和平里西街公交站', desc: '12路公交车进门台阶过高，老人上车困难', status: '协调中', progress: '已联系公交集团，预计下月加装低踏板', date: '2026-07-10' },
+  { id: 'FB20260705', category: '公共场所', location: '社区医院门诊大厅', desc: '挂号窗口字体太小，老人看不清科室', status: '已解决', progress: '已更换大字电子屏，增设导诊志愿者', date: '2026-07-05' },
+  { id: 'FB20260628', category: '社区环境', location: '翠湖小区北门', desc: '单元门口缺少无障碍坡道，轮椅出入不便', status: '施工中', progress: '社区已审批，本周开始施工改造', date: '2026-06-28' },
+]
+
+// ===== 中药百科 =====
+export const herbEncyclopedia = {
+  intro: '中药以"四气五味、归经升降"为核心理论，讲究君臣佐使、辨证施治。以下为中老年人常用中药知识，仅供参考，具体用药请遵医嘱。',
+  theories: [
+    { name: '四气五味', icon: 'leaf', desc: '四气指寒热温凉，五味指辛甘酸苦咸，决定药物性质与功效。' },
+    { name: '归经理论', icon: 'navigation', desc: '药物对特定脏腑经络的定向作用，如枸杞归肝经。' },
+    { name: '君臣佐使', icon: 'users', desc: '方剂中各药物主次关系，协同增效、减毒护胃。' },
+    { name: '辨证施治', icon: 'brain', desc: '同病异治、异病同治，根据体质与证候个性化用药。' },
+  ],
+  herbs: [
+    { name: '人参', icon: 'sprout', nature: '温', flavor: '甘、微苦', efficacy: '大补元气、复脉固脱、补脾益肺', use: '气虚乏力、食欲不振者宜用；高血压、感冒发热忌用', price: 88, unit: '克' },
+    { name: '枸杞', icon: 'flame', nature: '平', flavor: '甘', efficacy: '滋补肝肾、益精明目', use: '日常泡茶5-10粒；脾虚便溏者少用', price: 32, unit: '50g' },
+    { name: '黄芪', icon: 'leaf', nature: '微温', flavor: '甘', efficacy: '补气升阳、固表止汗、利水消肿', use: '气虚自汗、易感冒者常用；阴虚火旺忌用', price: 28, unit: '50g' },
+    { name: '当归', icon: 'heart', nature: '温', flavor: '甘、辛', efficacy: '补血活血、调经止痛、润肠通便', use: '面色萎黄、血虚痛经宜用；腹泻者慎用', price: 38, unit: '50g' },
+    { name: '陈皮', icon: 'carrot', nature: '温', flavor: '辛、苦', efficacy: '理气健脾、燥湿化痰', use: '消化不良、咳嗽痰多宜用；阴虚燥咳慎用', price: 18, unit: '50g' },
+    { name: '三七', icon: 'droplet', nature: '温', flavor: '甘、微苦', efficacy: '散瘀止血、消肿定痛', use: '跌打损伤、心脑血管养护常用；孕妇忌用', price: 128, unit: '50g' },
+  ],
+  remedies: [
+    { name: '生脉饮', ingredients: '人参 · 麦冬 · 五味子', effect: '益气复脉、养阴生津，适合夏季汗多气短', caution: '感冒发热不宜' },
+    { name: '四物汤', ingredients: '当归 · 川芎 · 白芍 · 熟地', effect: '补血调血，适合面色无华、血虚体质', caution: '经期慎用' },
+    { name: '补中益气汤', ingredients: '黄芪 · 人参 · 白术 · 当归 · 陈皮', effect: '补中益气、升阳举陷，适合气虚乏力', caution: '阴虚火旺忌用' },
+  ],
+}
+
+// ===== 安稳睡眠 =====
+export const sleepCare = {
+  intro: '老年人常见入睡困难、夜醒多次、早醒等问题，多与生理节律变化、慢病、情绪有关。下面是科学的睡眠知识与助眠方案。',
+  knowledge: [
+    { icon: 'moon', title: '老年人睡眠规律', desc: '60岁以上每天睡6-7小时属正常，早睡早起更符合生理节律，无需强求8小时。' },
+    { icon: 'coffee', title: '咖啡因与药物影响', desc: '下午3点后避免咖啡、浓茶；某些降压药、激素药可能影响睡眠，可咨询医生调整服药时间。' },
+    { icon: 'activity', title: '适度运动助眠', desc: '白天散步30-40分钟、傍晚太极或站桩，避免睡前2小时剧烈运动。' },
+    { icon: 'bed-double', title: '卧室环境', desc: '保持安静、黑暗、凉爽（20-22℃），选择软硬适中的床垫和支撑颈部的枕头。' },
+    { icon: 'smartphone', title: '远离蓝光', desc: '睡前1小时不刷手机、看强烈光线的电视，可听轻音乐或泡脚替代。' },
+    { icon: 'utensils', title: '饮食注意', desc: '晚餐7分饱，避免辛辣油腻；睡前可饮温牛奶、百合莲子汤，安神助眠。' },
+  ],
+  problems: [
+    { name: '入睡困难', cause: '焦虑、思虑过度、睡前兴奋', solution: '睡前1小时关闭电子设备，做腹式呼吸10分钟，听白噪音或康养音频。' },
+    { name: '夜间频繁觉醒', cause: '夜尿、关节痛、睡眠呼吸暂停', solution: '睡前2小时限水，慢病疼痛提前用药；打鼾严重建议做睡眠监测。' },
+    { name: '早醒后无法入睡', cause: '生物钟提前、抑郁倾向', solution: '白天增加光照与活动，午睡不超过30分钟；情绪持续低落建议就医。' },
+    { name: '多梦易醒', cause: '气血不足、压力大、饮食过饱', solution: '可咨询中医师调理气血，晚餐少油少盐，睡前泡脚15分钟。' },
+  ],
+  products: [
+    { name: '薰衣草助眠喷雾', price: 69, desc: '天然薰衣草精油，枕前轻喷，舒缓安神', icon: 'flower' },
+    { name: '记忆棉护颈枕', price: 159, desc: '贴合颈椎曲线，缓解肩颈僵硬，仰睡侧睡都舒适', icon: 'bed' },
+    { name: '智能助眠眼罩', price: 199, desc: '蓝牙白噪音+加热眼罩，15分钟自动关机', icon: 'moon' },
+    { name: '酸枣仁百合茶', price: 49, desc: '药食同源配方，宁心安神，睡前温饮一杯', icon: 'coffee' },
+    { name: '恒温乳胶床垫', price: 1280, desc: '透气抑螨、贴合身体、缓解压力点不适', icon: 'bed-double' },
+    { name: '泡脚助眠包', price: 39, desc: '艾草+生姜+红花，睡前泡脚15分钟暖身助眠', icon: 'flame' },
+  ],
+}
 
 // 医生在线问诊
 export const onlineDoctors = [
@@ -1024,6 +1201,198 @@ export const companionSuggestions = [
     time: '今日 10:30',
   },
 ]
+
+// ===== 任务6：健康档案管理（4大模块） =====
+export const healthArchive = {
+  profile: {
+    name: '王秀兰', age: 68, gender: '女', bloodType: 'A',
+    height: '158cm', weight: '56kg', id: 'LT20260001',
+    healthScore: 86, riskLevel: '低风险',
+    allergies: '青霉素', chronic: '高血压、轻度骨质疏松',
+    familyHistory: '父亲高血压，母亲糖尿病',
+    surgery: '2005年阑尾切除术',
+    lastCheckup: '2026-06-15',
+  },
+  checkups: [
+    {
+      date: '2026-06-15', hospital: '协和医院', type: '年度体检', summary: '血压略偏高，骨密度下降，其余正常',
+      items: [
+        { name: '血压', value: '128/82', unit: 'mmHg', status: '偏高', normal: '<120/80' },
+        { name: '血糖(空腹)', value: '6.8', unit: 'mmol/L', status: '偏高', normal: '<6.1' },
+        { name: '血脂(总胆固醇)', value: '5.2', unit: 'mmol/L', status: '正常', normal: '<5.2' },
+        { name: '骨密度', value: '-2.1', unit: 'T值', status: '偏低', normal: '>-1.0' },
+        { name: '心电图', value: '窦性心律', unit: '', status: '正常', normal: '窦性心律' },
+        { name: '胸部X光', value: '双肺纹理清晰', unit: '', status: '正常', normal: '无异常' },
+      ],
+    },
+    {
+      date: '2026-01-10', hospital: '社区医院', type: '常规体检', summary: '各项指标基本正常',
+      items: [
+        { name: '血压', value: '124/80', unit: 'mmHg', status: '正常', normal: '<120/80' },
+        { name: '血糖(空腹)', value: '6.2', unit: 'mmol/L', status: '正常', normal: '<6.1' },
+        { name: '血常规', value: '正常', unit: '', status: '正常', normal: '正常' },
+      ],
+    },
+  ],
+  records: [
+    { date: '2026-07-08', hospital: '协和医院', dept: '心内科', doctor: '张主任', diagnosis: '高血压复查', prescription: '硝苯地平控释片 30mg 每日1次', note: '血压控制可，继续服药，3个月复查' },
+    { date: '2026-05-20', hospital: '协和医院', dept: '骨科', doctor: '李医生', diagnosis: '轻度骨质疏松', prescription: '碳酸钙D3片 + 阿仑膦酸钠', note: '建议多晒太阳，适度运动' },
+    { date: '2026-03-15', hospital: '社区医院', dept: '全科', doctor: '王医生', diagnosis: '感冒', prescription: '感冒灵颗粒', note: '已痊愈' },
+  ],
+  medications: [
+    { name: '硝苯地平控释片', dose: '30mg', frequency: '每日1次', time: '早饭后', status: '服用中', startDate: '2024-03-15', purpose: '降压' },
+    { name: '阿卡波糖片', dose: '50mg', frequency: '每日3次', time: '饭前30分钟', status: '服用中', startDate: '2024-08-10', purpose: '降糖' },
+    { name: '碳酸钙D3片', dose: '600mg', frequency: '每日1次', time: '晚饭后', status: '服用中', startDate: '2026-05-20', purpose: '补钙' },
+    { name: '阿仑膦酸钠', dose: '70mg', frequency: '每周1次', time: '周日早餐前', status: '服用中', startDate: '2026-05-20', purpose: '抗骨质疏松' },
+  ],
+}
+
+// ===== 任务7：家庭共享设置详情 =====
+export const familyShareDetail = {
+  members: [
+    { id: 'u1', name: '小芳', relation: '女儿', avatar: 'user', bound: true, color: 'var(--color-brand)', permissions: ['health', 'location', 'medication', 'memory'], online: true, distance: '8.8km' },
+    { id: 'u2', name: '小明', relation: '儿子', avatar: 'user', bound: true, color: 'var(--color-accent2)', permissions: ['health', 'medication'], online: true, distance: '15.6km' },
+    { id: 'u3', name: '张医生', relation: '家庭医生', avatar: 'stethoscope', bound: true, color: 'var(--color-accent2)', permissions: ['health'], online: true, distance: '3.2km' },
+    { id: 'u4', name: '李阿姨', relation: '社区护理员', avatar: 'heart-handshake', bound: true, color: 'var(--color-accent3)', permissions: ['health', 'medication'], online: false, distance: '' },
+  ],
+  permissionOptions: [
+    { key: 'health', name: '健康数据', desc: '血压、心率、睡眠等', icon: 'heart-pulse' },
+    { key: 'location', name: '位置信息', desc: '实时位置共享', icon: 'map-pin' },
+    { key: 'medication', name: '用药情况', desc: '用药记录与提醒', icon: 'pill' },
+    { key: 'memory', name: '回忆录', desc: 'AI采访人生故事', icon: 'book-heart' },
+  ],
+  inviteTypes: [
+    { type: 'child', icon: 'user-plus', name: '绑定子女账号', desc: '子女可通过手机号绑定，远程查看您的健康与生活' },
+    { type: 'doctor', icon: 'stethoscope', name: '邀请家庭医生', desc: '邀请医生查看您的健康档案，提供专业指导' },
+    { type: 'nurse', icon: 'heart-handshake', name: '邀请护理员', desc: '邀请社区护理员提供上门护理服务' },
+  ],
+}
+
+// ===== 任务8：AI采访（人生回忆录） =====
+export const aiInterviewDetail = {
+  topics: [
+    { id: 'childhood', icon: 'camera', bg: 'linear-gradient(135deg, #FFB199, #FF8E8E)', name: '童年趣事', desc: '故乡、伙伴、游戏、童年趣闻', questions: 12, recorded: 8 },
+    { id: 'youth', icon: 'graduation', bg: 'linear-gradient(135deg, #FCE58A, #F6A35C)', name: '青春故事', desc: '求学、初恋、理想与挣扎', questions: 15, recorded: 5 },
+    { id: 'work', icon: 'briefcase', bg: 'linear-gradient(135deg, #C8F0E0, #5BB89E)', name: '工作经历', desc: '第一份工作、成就与挫折', questions: 18, recorded: 6 },
+    { id: 'love', icon: 'heart', bg: 'linear-gradient(135deg, #FFD3A5, #FD6585)', name: '爱情婚姻', desc: '相识、相恋、成家故事', questions: 14, recorded: 4 },
+    { id: 'parenting', icon: 'users', bg: 'linear-gradient(135deg, #6FB1D9, #3E7CB1)', name: '育儿心得', desc: '生儿育女、教育与陪伴', questions: 16, recorded: 3 },
+  ],
+  features: [
+    { icon: 'mic', name: '语音录制转文字', desc: '小康引导提问，您慢慢讲述，AI自动转文字' },
+    { icon: 'image', name: '老照片辅助回忆', desc: '上传老照片，AI识别时代背景帮助回忆' },
+    { icon: 'users', name: '子女协作补充', desc: '子女可补充细节，让故事更完整' },
+    { icon: 'share', name: '分享给后代', desc: '一键分享给子女，让亲情代代相传' },
+  ],
+  collaborators: [
+    { name: '小芳', role: '女儿', contributed: 12, lastTime: '昨天 21:30' },
+    { name: '小明', role: '儿子', contributed: 5, lastTime: '3天前' },
+    { name: '孙女甜甜', role: '孙女', contributed: 2, lastTime: '上周' },
+  ],
+}
+
+// ===== 任务9：我的订单（3类） =====
+export const orderListDetail = {
+  shopOrders: [
+    { id: 'SO20260710', name: '钙片+维生素D组合', spec: '600mg×60片', amount: 128, status: '已签收', date: '2026-07-10', canReorder: true, canReview: true, reviewed: false },
+    { id: 'SO20260705', name: '防滑浴室地垫', spec: '50×80cm', amount: 39, status: '配送中', date: '2026-07-05', canTrack: true, canReorder: false, canReview: false, reviewed: false },
+    { id: 'SO20260628', name: '智能血压计', spec: '欧姆龙7052', amount: 269, status: '已签收', date: '2026-06-28', canReorder: true, canReview: true, reviewed: true },
+    { id: 'SO20260615', name: '无添加坚果礼盒', spec: '1.2kg', amount: 88, status: '已签收', date: '2026-06-15', canReorder: true, canReview: true, reviewed: true },
+  ],
+  serviceOrders: [
+    { id: 'SV20260725', type: '陪诊', name: '安心陪诊（协和医院心内科）', date: '2026-07-25 09:00', status: '待服务', canTrack: true, canReview: false, staff: '护理员小周', amount: 199 },
+    { id: 'SV20260701', type: '家政', name: '上门深度保洁', date: '2026-07-01', status: '已完成', canTrack: false, canReview: true, staff: '保洁张阿姨', amount: 169 },
+    { id: 'SV20260620', type: '适老改造', name: '卫生间防滑扶手改造', date: '2026-06-20', status: '施工中', canTrack: true, canReview: false, staff: '改造师傅老李', amount: 880 },
+    { id: 'SV20260610', type: '陪诊', name: '安心陪诊（社区医院）', date: '2026-06-10', status: '已完成', canTrack: false, canReview: true, staff: '护理员小周', amount: 199 },
+  ],
+  courseOrders: [
+    { id: 'CO20260718', name: '京剧名段赏析会', date: '2026-07-18 14:00', location: '社区文化中心', status: '已报名', canReview: false },
+    { id: 'CO20260721', name: '手机摄影技巧分享', date: '2026-07-21 15:00', location: '社区活动室', status: '已报名', canReview: false },
+    { id: 'CO20260701', name: '智能手机入门课', date: '2026-07-01 10:00', location: '老年大学', status: '已完成', canReview: true },
+    { id: 'CO20260620', name: '书法基础课', date: '2026-06-20 09:00', location: '社区书法室', status: '已完成', canReview: true },
+  ],
+}
+
+// ===== 任务10：会员权益 =====
+export const memberBenefits = {
+  currentLevel: '黄金树',
+  currentPoints: 2680,
+  growthToNext: 320,
+  nextLevel: '白金树',
+  levels: [
+    { name: '白银树', threshold: '0-999成长值', color: '#C0C0C0', benefits: ['生活服务9.5折', '健康咨询', '社区活动优先'] },
+    { name: '黄金树', threshold: '1000-2999成长值', color: '#FFD700', benefits: ['生活服务9折', '陪诊服务优先', '每月1次免费体检', '24小时健康咨询'], current: true },
+    { name: '白金树', threshold: '3000-5999成长值', color: '#E5E4E2', benefits: ['生活服务8.5折', '陪诊免费1次/月', '专属家庭医生', '24h专属管家'] },
+    { name: '钻石树', threshold: '6000+成长值', color: '#B9F2FF', benefits: ['生活服务8折', '上门护理2次/月', '全家共享权益', '免费适老改造评估'] },
+  ],
+  subscriptions: [
+    { name: '个人版', price: 19, period: '月', features: ['健康档案管理', 'AI小康陪伴', '生活服务9折', '社区活动优先'], popular: false },
+    { name: '家庭套餐', price: 49, period: '月', features: ['个人版全部权益', '子女绑定共享', '全家健康档案', '专属家庭医生', '陪诊免费1次/月'], popular: true },
+    { name: '尊享版', price: 99, period: '月', features: ['家庭套餐全部权益', '上门护理2次/月', '24h专属管家', '免费适老改造评估', '全家共享权益'], popular: false },
+  ],
+  pointsHistory: [
+    { date: '2026-07-15', desc: '每日签到', points: '+5' },
+    { date: '2026-07-14', desc: '完成健康打卡', points: '+10' },
+    { date: '2026-07-10', desc: '商城消费128元', points: '+128' },
+    { date: '2026-07-08', desc: '参加AI采访', points: '+20' },
+    { date: '2026-07-05', desc: '推荐好友加入', points: '+50' },
+  ],
+  pointsShop: [
+    { name: '土鸡蛋10枚', points: 200, icon: 'carrot', original: 25 },
+    { name: '体检套餐8折券', points: 500, icon: 'clipboard-list', original: 80 },
+    { name: '陪诊服务体验券', points: 800, icon: 'stethoscope', original: 199 },
+    { name: '上门保洁1次', points: 1500, icon: 'sparkles', original: 169 },
+    { name: '京剧演出门票', points: 2000, icon: 'drama', original: 280 },
+    { name: '智能血压计', points: 3000, icon: 'heart-pulse', original: 269 },
+  ],
+}
+
+// ===== 任务11：提醒设置 =====
+export const reminderSettings = {
+  categories: [
+    { key: 'medication', icon: 'pill', name: '用药提醒', enabled: true, methods: { voice: true, vibrate: true, popup: true }, frequency: '每次服药前10分钟' },
+    { key: 'water', icon: 'droplets', name: '喝水提醒', enabled: true, methods: { voice: false, vibrate: true, popup: true }, frequency: '每2小时一次' },
+    { key: 'bp', icon: 'droplet', name: '测血压提醒', enabled: true, methods: { voice: true, vibrate: true, popup: true }, frequency: '每周一三五早8点' },
+    { key: 'exercise', icon: 'footprints', name: '运动提醒', enabled: true, methods: { voice: false, vibrate: true, popup: false }, frequency: '每日9:00' },
+    { key: 'sleep', icon: 'moon', name: '就寝提醒', enabled: true, methods: { voice: true, vibrate: false, popup: true }, frequency: '每晚22:00' },
+    { key: 'turnover', icon: 'refresh-cw', name: '翻身提醒', enabled: false, methods: { voice: false, vibrate: true, popup: false }, frequency: '每2小时' },
+  ],
+  doNotDisturb: { enabled: true, start: '22:00', end: '07:00' },
+  methodOptions: [
+    { key: 'voice', name: '语音播报', icon: 'volume-2' },
+    { key: 'vibrate', name: '震动', icon: 'activity' },
+    { key: 'popup', name: '弹窗提示', icon: 'bell' },
+  ],
+}
+
+// ===== 任务12：AI管家设置 =====
+export const aiManagerSettings = {
+  voiceSpeed: '中速',
+  voiceType: '温暖男声',
+  dialect: '普通话',
+  volume: 70,
+  voiceSpeedOptions: ['慢速', '中速', '快速'],
+  voiceTypeOptions: [
+    { value: '温暖男声', desc: '亲切沉稳' },
+    { value: '亲切女声', desc: '温柔细腻' },
+    { value: '童声', desc: '活泼可爱' },
+    { value: '老友声', desc: '平辈交流' },
+  ],
+  dialectOptions: ['普通话', '四川话', '粤语', '东北话', '上海话', '河南话'],
+  careFrequency: '中频',
+  careFrequencyOptions: [
+    { value: '低频', desc: '仅在重要事项时主动关怀' },
+    { value: '中频', desc: '每日3-5次主动问候' },
+    { value: '高频', desc: '每日8-10次主动关怀，适合独居老人' },
+  ],
+  careOptions: [
+    { key: 'greeting', name: '日常问候', desc: '早安、午安、晚安问候', enabled: true },
+    { key: 'weather', name: '天气提醒', desc: '出门前提醒穿衣带伞', enabled: true },
+    { key: 'healthCheck', name: '健康关怀', desc: '提醒量血压、按时吃药', enabled: true },
+    { key: 'mood', name: '情绪关怀', desc: '察觉情绪低落主动陪伴', enabled: true },
+    { key: 'festival', name: '节日祝福', desc: '节假日送上温馨祝福', enabled: true },
+  ],
+  nickname: '王奶奶',
+}
 
 // ===== 轮椅模式：上门服务 =====
 export const wheelchairHomeServices = [

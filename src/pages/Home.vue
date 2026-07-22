@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile, voiceAudiobooks, voiceNews, scrollAppointments, alertCenter, elderlyMeals, elderlyRetrofit, wheelchairHomeServices, wheelchairQuickShop, wheelchairAccessibleNav, wheelchairRehabGuide } from '@/mock'
+import { greeting, quickHealth, todayPlan, todaySchedule, services, companionAvatar, familyContacts, lifeServices, homeInspections, userProfile, voiceAudiobooks, voiceNews, scrollAppointments, alertCenter, elderlyMeals, elderlyRetrofit, wheelchairHomeServices, wheelchairQuickShop, wheelchairAccessibleNav, wheelchairRehabGuide, herbEncyclopedia, sleepCare } from '@/mock'
 import { useUserStore } from '@/stores/user'
 import AppIcon from '@/components/AppIcon.vue'
 import BookingFlow from '@/components/BookingFlow.vue'
@@ -68,6 +68,7 @@ const shopMoreItems = computed(() => {
 function openLifeService(svc: typeof lifeServices[number]) {
   activeService.value = svc
   showShopMore.value = false
+  shopCategory.value = 'food'
   showLifeService.value = true
 }
 function bookService(name: string) {
@@ -79,6 +80,35 @@ function buyProduct(name: string) {
 }
 function toggleShopMore() {
   showShopMore.value = !showShopMore.value
+}
+
+// 康养商城：两大类切换（安心食品 / 助老用品）
+const shopCategory = ref<'food' | 'tool'>('food')
+const shopFoodItems = computed(() => {
+  const svc = activeService.value
+  if (svc && svc.key === 'shop' && 'foodItems' in svc) {
+    return (svc as { foodItems: { name: string; price: number; desc: string }[] }).foodItems
+  }
+  return []
+})
+const shopToolItems = computed(() => {
+  const svc = activeService.value
+  if (svc && svc.key === 'shop' && 'toolItems' in svc) {
+    return (svc as { toolItems: { name: string; price: number; desc: string }[] }).toolItems
+  }
+  return []
+})
+
+// 中药百科
+function consultHerb(name: string) {
+  showAlert(`已加入购物车：${name}\n\n中药用药请遵医嘱，小康可为您预约中医师一对一咨询。`)
+}
+// 安稳睡眠
+function buySleepProduct(name: string) {
+  showAlert(`已加入购物车：${name}\n您可继续选购，或在「我的-我的订单」中结算。`)
+}
+function consultSleepProblem(name: string) {
+  showAlert(`已预约咨询：${name}\n\n小康将为您对接睡眠专科医生或中医师，24小时内联系您。`)
 }
 
 // ===== 任务9：长者助餐增强 =====
@@ -1781,7 +1811,8 @@ function openFeatureDialog(title: string, content: string, icon: string) {
             </div>
             <button class="life-svc-close" @click="showLifeService = false"><AppIcon name="x" :size="18" /></button>
           </div>
-          <div v-if="activeService.items.length" class="life-svc-list">
+          <div class="life-svc-body">
+          <div v-if="activeService.items.length && activeService.key !== 'shop'" class="life-svc-list">
             <div v-for="(item, idx) in activeService.items" :key="idx" class="life-svc-item">
               <div class="life-svc-item-info">
                 <div class="life-svc-item-name">{{ item.name }}</div>
@@ -1917,10 +1948,37 @@ function openFeatureDialog(title: string, content: string, icon: string) {
             </div>
           </div>
 
-          <!-- 康养商城：查看更多适老产品 -->
-          <div v-if="activeService.key === 'shop' && shopMoreItems.length" class="shop-more-wrap">
-            <div v-if="showShopMore" class="shop-more-list">
-              <div v-for="(item, idx) in shopMoreItems" :key="idx" class="life-svc-item shop-more-item">
+          <!-- 康养商城：两大类切换（安心食品 / 助老用品） -->
+          <div v-if="activeService.key === 'shop'" class="shop-category-wrap">
+            <div class="shop-category-tabs">
+              <button
+                class="shop-category-tab"
+                :class="{ active: shopCategory === 'food' }"
+                @click="shopCategory = 'food'"
+              >
+                <AppIcon name="carrot" :size="15" :color="shopCategory === 'food' ? '#fff' : 'var(--color-brand-dark)'" />
+                <span>安心食品</span>
+                <span class="shop-cat-count">{{ shopFoodItems.length }}款</span>
+              </button>
+              <button
+                class="shop-category-tab"
+                :class="{ active: shopCategory === 'tool' }"
+                @click="shopCategory = 'tool'"
+              >
+                <AppIcon name="accessibility" :size="15" :color="shopCategory === 'tool' ? '#fff' : 'var(--color-brand-dark)'" />
+                <span>助老用品</span>
+                <span class="shop-cat-count">{{ shopToolItems.length }}款</span>
+              </button>
+            </div>
+
+            <div class="shop-cat-intro">
+              <AppIcon name="info" :size="12" :color="'var(--color-brand)'" />
+              <span v-if="shopCategory === 'food'">保健品 + 健康食品，严选品质，老人安心食用</span>
+              <span v-else>辅具 + 护理用品，让日常生活更安全便捷</span>
+            </div>
+
+            <div class="shop-cat-list">
+              <div v-for="(item, idx) in (shopCategory === 'food' ? shopFoodItems : shopToolItems)" :key="idx" class="life-svc-item shop-cat-item">
                 <div class="life-svc-item-info">
                   <div class="life-svc-item-name">{{ item.name }}</div>
                   <div class="life-svc-item-desc">{{ item.desc }}</div>
@@ -1931,15 +1989,120 @@ function openFeatureDialog(title: string, content: string, icon: string) {
                 </div>
               </div>
             </div>
-            <button class="shop-more-btn" @click="toggleShopMore">
-              <span>{{ showShopMore ? '收起' : '查看更多适老产品' }}</span>
-              <AppIcon name="chevron-down" :size="16" :color="'var(--color-brand)'" :class="{ rotated: showShopMore }" />
-            </button>
+          </div>
+
+          <!-- 中药百科 -->
+          <div v-if="activeService.key === 'herb'" class="herb-enhance">
+            <div class="herb-intro">{{ herbEncyclopedia.intro }}</div>
+
+            <div class="herb-section-title">
+              <AppIcon name="book-open" :size="15" :color="'var(--color-brand)'" />
+              <span>中医基础理论</span>
+            </div>
+            <div class="herb-theory-grid">
+              <div v-for="(t, idx) in herbEncyclopedia.theories" :key="idx" class="herb-theory-card">
+                <div class="herb-theory-icon"><AppIcon :name="t.icon" :size="18" :color="'var(--color-brand-dark)'" /></div>
+                <div class="herb-theory-body">
+                  <div class="herb-theory-name">{{ t.name }}</div>
+                  <div class="herb-theory-desc">{{ t.desc }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="herb-section-title">
+              <AppIcon name="leaf" :size="15" :color="'var(--color-brand)'" />
+              <span>常用中药</span>
+            </div>
+            <div class="herb-list">
+              <div v-for="(h, idx) in herbEncyclopedia.herbs" :key="idx" class="herb-item">
+                <div class="herb-item-head">
+                  <span class="herb-item-icon"><AppIcon :name="h.icon" :size="18" :color="'var(--color-brand-dark)'" /></span>
+                  <span class="herb-item-name">{{ h.name }}</span>
+                  <span class="herb-item-nature">性{{ h.nature }}</span>
+                  <span class="herb-item-flavor">味{{ h.flavor }}</span>
+                  <span class="herb-item-price">¥{{ h.price }}/{{ h.unit }}</span>
+                </div>
+                <div class="herb-item-efficacy"><AppIcon name="sparkles" :size="11" :color="'var(--color-brand)'" /> {{ h.efficacy }}</div>
+                <div class="herb-item-use"><AppIcon name="info" :size="11" :color="'var(--color-text-tertiary)'" /> {{ h.use }}</div>
+                <button class="herb-item-btn" @click="consultHerb(h.name)">咨询中医师</button>
+              </div>
+            </div>
+
+            <div class="herb-section-title">
+              <AppIcon name="scroll-text" :size="15" :color="'var(--color-brand)'" />
+              <span>经典方剂</span>
+            </div>
+            <div class="remedy-list">
+              <div v-for="(r, idx) in herbEncyclopedia.remedies" :key="idx" class="remedy-card">
+                <div class="remedy-name">{{ r.name }}</div>
+                <div class="remedy-ingredients"><AppIcon name="leaf" :size="11" /> {{ r.ingredients }}</div>
+                <div class="remedy-effect">{{ r.effect }}</div>
+                <div class="remedy-caution"><AppIcon name="alert-triangle" :size="11" :color="'#E8853A'" /> 注意：{{ r.caution }}</div>
+              </div>
+            </div>
+            <div class="herb-safety-tip">
+              <AppIcon name="shield-check" :size="13" :color="'var(--color-brand)'" />
+              <span>以上内容仅供学习参考，具体用药请咨询中医师，切勿自行用药</span>
+            </div>
+          </div>
+
+          <!-- 安稳睡眠 -->
+          <div v-if="activeService.key === 'sleep'" class="sleep-enhance">
+            <div class="sleep-intro">{{ sleepCare.intro }}</div>
+
+            <div class="sleep-section-title">
+              <AppIcon name="moon" :size="15" :color="'var(--color-brand)'" />
+              <span>睡眠知识科普</span>
+            </div>
+            <div class="sleep-knowledge-grid">
+              <div v-for="(k, idx) in sleepCare.knowledge" :key="idx" class="sleep-knowledge-card">
+                <div class="sleep-knowledge-icon"><AppIcon :name="k.icon" :size="18" :color="'var(--color-brand-dark)'" /></div>
+                <div class="sleep-knowledge-body">
+                  <div class="sleep-knowledge-title">{{ k.title }}</div>
+                  <div class="sleep-knowledge-desc">{{ k.desc }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sleep-section-title">
+              <AppIcon name="brain" :size="15" :color="'var(--color-brand)'" />
+              <span>常见睡眠问题与方案</span>
+            </div>
+            <div class="sleep-problem-list">
+              <div v-for="(p, idx) in sleepCare.problems" :key="idx" class="sleep-problem-card">
+                <div class="sleep-problem-head">
+                  <span class="sleep-problem-name">{{ p.name }}</span>
+                  <button class="sleep-problem-consult" @click="consultSleepProblem(p.name)">咨询医生</button>
+                </div>
+                <div class="sleep-problem-cause"><AppIcon name="alert-triangle" :size="11" :color="'#E8853A'" /> 可能原因：{{ p.cause }}</div>
+                <div class="sleep-problem-solution"><AppIcon name="lightbulb" :size="11" :color="'var(--color-brand)'" /> 助眠方案：{{ p.solution }}</div>
+              </div>
+            </div>
+
+            <div class="sleep-section-title">
+              <AppIcon name="shopping-bag" :size="15" :color="'var(--color-brand)'" />
+              <span>助眠产品推荐</span>
+            </div>
+            <div class="sleep-product-list">
+              <div v-for="(p, idx) in sleepCare.products" :key="idx" class="life-svc-item sleep-product-item">
+                <div class="life-svc-item-info">
+                  <div class="life-svc-item-name">
+                    <AppIcon :name="p.icon" :size="14" :color="'var(--color-brand)'" /> {{ p.name }}
+                  </div>
+                  <div class="life-svc-item-desc">{{ p.desc }}</div>
+                </div>
+                <div class="life-svc-item-right">
+                  <span class="life-svc-item-price">¥{{ p.price }}</span>
+                  <button class="life-svc-item-btn" @click="buySleepProduct(p.name)">购买</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="life-svc-tip">
             <AppIcon name="shield-check" :size="14" :color="'var(--color-brand)'" />
             <span>所有服务均经平台认证，小康全程跟踪订单</span>
+          </div>
           </div>
         </div>
       </div>
@@ -2300,24 +2463,26 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   width: 100%;
   max-width: 380px;
   background: var(--color-surface-solid);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5) var(--space-5) var(--space-6);
-  box-shadow: var(--shadow-float);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   animation: dialog-pop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 @keyframes dialog-pop {
-  from { transform: scale(0.92); opacity: 0; }
+  from { transform: scale(0.96); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 .life-svc-head {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-4);
+  padding: 16px 18px;
+  background: var(--color-surface-solid);
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 .life-svc-icon {
   display: flex;
@@ -2346,15 +2511,23 @@ function openFeatureDialog(title: string, content: string, icon: string) {
   justify-content: center;
   width: 32px;
   height: 32px;
+  min-height: 32px !important;
   border-radius: 50%;
   border: none;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: transparent;
+  color: var(--color-text-tertiary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
-.life-svc-close:hover { background: var(--color-bg-tertiary); transform: rotate(90deg); }
+.life-svc-close:hover { background: rgba(0, 0, 0, 0.06); }
 .life-svc-close:active { transform: scale(0.9); }
+.life-svc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  min-height: 0;
+}
 .life-svc-list {
   display: flex;
   flex-direction: column;
@@ -5362,5 +5535,371 @@ function openFeatureDialog(title: string, content: string, icon: string) {
 .alert-detail-empty-desc {
   font-size: 0.75rem;
   color: #6C7293;
+}
+
+/* ===== 康养商城：两大类切换 ===== */
+.shop-category-wrap {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.shop-category-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(45, 52, 54, 0.04);
+  border-radius: 12px;
+}
+.shop-category-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+.shop-category-tab.active {
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(91, 184, 158, 0.3);
+}
+.shop-cat-count {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: 500;
+}
+.shop-category-tab:not(.active) .shop-cat-count {
+  background: rgba(91, 184, 158, 0.12);
+  color: var(--color-brand-dark);
+}
+.shop-cat-intro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(91, 184, 158, 0.06);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+.shop-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.shop-cat-item {
+  background: #fff;
+}
+
+/* ===== 中药百科 ===== */
+.herb-enhance {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.herb-intro {
+  padding: var(--space-3);
+  background: rgba(91, 184, 158, 0.08);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.herb-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  margin-top: 4px;
+}
+.herb-theory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.herb-theory-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.herb-theory-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(91, 184, 158, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.herb-theory-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+.herb-theory-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+.herb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.herb-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  border-left: 4px solid var(--color-brand);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.herb-item-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.herb-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(91, 184, 158, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.herb-item-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+.herb-item-nature,
+.herb-item-flavor {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(246, 163, 92, 0.12);
+  color: #8a4a14;
+}
+.herb-item-flavor {
+  background: rgba(111, 177, 217, 0.12);
+  color: #2a5d80;
+}
+.herb-item-price {
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #E74C3C;
+  font-family: var(--font-display);
+}
+.herb-item-efficacy,
+.herb-item-use {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.74rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.herb-item-btn {
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: rgba(91, 184, 158, 0.1);
+  color: var(--color-brand-dark);
+  border: 1px solid rgba(91, 184, 158, 0.3);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.herb-item-btn:hover {
+  background: rgba(91, 184, 158, 0.18);
+}
+.remedy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.remedy-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.remedy-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  margin-bottom: 4px;
+}
+.remedy-ingredients,
+.remedy-effect,
+.remedy-caution {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+.remedy-caution { color: #8a4a14; }
+.herb-safety-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(246, 163, 92, 0.1);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  color: #8a4a14;
+  line-height: 1.5;
+}
+
+/* ===== 安稳睡眠 ===== */
+.sleep-enhance {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.sleep-intro {
+  padding: var(--space-3);
+  background: rgba(111, 177, 217, 0.08);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.sleep-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  margin-top: 4px;
+}
+.sleep-knowledge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sleep-knowledge-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.sleep-knowledge-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(111, 177, 217, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sleep-knowledge-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+.sleep-knowledge-desc {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.sleep-problem-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sleep-problem-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  border-left: 4px solid #6FB1D9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.sleep-problem-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.sleep-problem-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+.sleep-problem-consult {
+  padding: 4px 10px;
+  background: rgba(91, 184, 158, 0.1);
+  color: var(--color-brand-dark);
+  border: 1px solid rgba(91, 184, 158, 0.3);
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sleep-problem-consult:hover {
+  background: rgba(91, 184, 158, 0.18);
+}
+.sleep-problem-cause,
+.sleep-problem-solution {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.sleep-product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sleep-product-item {
+  background: #fff;
 }
 </style>
